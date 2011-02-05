@@ -1,0 +1,12 @@
+# Eclipse files
+/.classpath
+/.project
+/.settings
+
+# OS X "dust"
+/.DS_Store
+
+# build files
+/target
+/bin
+/build

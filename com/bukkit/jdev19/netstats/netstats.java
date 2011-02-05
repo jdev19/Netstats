@@ -11,6 +11,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.event.player.PlayerListener;
+import org.bukkit.event.player.PlayerLoginEvent;
 
 public class netstats extends JavaPlugin {
 	private final NetPlayerListener playerListener = new NetPlayerListener(this);
@@ -25,7 +26,7 @@ public class netstats extends JavaPlugin {
 	}
 	
 	@Override
-	public void onEnable() {		
+	public void onEnable() {
 		PluginDescriptionFile pdfFile = this.getDescription();
 		System.out.println(pdfFile.getName()+" version "+pdfFile.getVersion()+" is enabled.");
 	}
