@@ -14,7 +14,7 @@ public class NetPlayerListener extends PlayerListener {
 	
 	public void onPlayerJoin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
-		Server server = plugin.getServer();
-		player.sendMessage("Welcome "+player.getName()+"!");
+		Date date = new Date();
+		player.sendMessage("Welcome "+player.getName()+"! The date is: "+date);
 	}
 }
