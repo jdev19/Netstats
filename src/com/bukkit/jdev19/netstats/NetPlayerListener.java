@@ -13,6 +13,12 @@ public class NetPlayerListener extends PlayerListener {
 	public void onPlayerJoin(PlayerEvent event) {
 		Player player = event.getPlayer();
 		long date = System.currentTimeMillis();
-		player.sendMessage("Welcome "+player.getName()+"! The date is: "+date);
+		player.sendMessage("[Netstats] Player: "+player.getName()+" has joined at: "+date);
+	}
+	
+	public void onPlayerQuit(PlayerEvent event) {
+		Player player = event.getPlayer();
+		long date = System.currentTimeMillis();
+		System.out.println("[Netstats] Player: "+player.getName()+" has left at: "+date);
 	}
 }
