@@ -1,10 +1,8 @@
 package com.bukkit.jdev19.netstats;
 
-import java.util.Date;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerListener;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerEvent;
 
 public class NetPlayerListener extends PlayerListener {
 	public static netstats plugin;
@@ -12,9 +10,9 @@ public class NetPlayerListener extends PlayerListener {
 		plugin = instance;
 	}
 	
-	public void onPlayerJoin(PlayerLoginEvent event) {
+	public void onPlayerJoin(PlayerEvent event) {
 		Player player = event.getPlayer();
-		Date date = new Date();
+		long date = System.currentTimeMillis();
 		player.sendMessage("Welcome "+player.getName()+"! The date is: "+date);
 	}
 }

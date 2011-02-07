@@ -24,7 +24,7 @@ public class netstats extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvent(Event.Type.PLAYER_COMMAND, this.playerListener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Event.Priority.Normal, this);
 		
 		PluginDescriptionFile pdfFile = this.getDescription();
 		System.out.println(pdfFile.getName()+" version "+pdfFile.getVersion()+" is enabled.");
