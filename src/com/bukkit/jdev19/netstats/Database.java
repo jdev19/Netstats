@@ -72,32 +72,34 @@ public class Database {
 
 			if (hasData(name)) {
 				if (dest == "enter") {
-					ps = con.prepareStatement("UPDATE players SET enter = ?, status = `?` WHERE name = ?");
+					ps = con.prepareStatement("UPDATE players SET enter = ?, logout = ?, status = 1 WHERE name = ?");
 					ps.setLong(1, time);
-					ps.setInt(2, 1);
+					ps.setLong(2, time);
 					ps.setString(3, name);
 					ps.executeUpdate();
 				} else if (dest == "leave") {
-					ps = con.prepareStatement("UPDATE players SET leave = ?, status = `?` WHERE name = ?");
+					ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0 WHERE name = ?");
 					ps.setLong(1, time);
-					ps.setInt(2, 0);
-					ps.setString(3, name);
-					ps.executeUpdate();
-					ps = con.prepareStatement("SELECT enter FROM players WHERE name = ?" + (this.database.equals(Type.SQLITE) ? "" : " LIMIT 1"));
-					ps.setString(1, name);
-					rs = ps.executeQuery();
-					long enter = rs.getLong("enter");
-					long total = time-enter;
-					ps = con.prepareStatement("UPDATE players SET total = ? WHERE name = ?");
-					ps.setLong(1, total);
 					ps.setString(2, name);
 					ps.executeUpdate();
+					ps = con.prepareStatement("SELECT enter, total FROM players WHERE name = ?" + (this.database.equals(Type.SQLITE) ? "" : " LIMIT 1"));
+					ps.setString(1, name);
+					rs = ps.executeQuery();
+					if (rs.next()) {
+						long enter = rs.getLong("enter");
+						long total = rs.getLong("total");
+						total = total+(time-enter);
+						ps = con.prepareStatement("UPDATE players SET total = ? WHERE name = ?");
+						ps.setLong(1, total);
+						ps.setString(2, name);
+						ps.executeUpdate();
+					}
 				}
 			} else {
-				ps = con.prepareStatement("INSERT INTO players (name, enter, status) VALUES(?,?,?)");
+				ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status) VALUES(null,?,?,?,0,1)");
 				ps.setString(1, name);
 				ps.setLong(2, time);
-				ps.setInt(3, 1);
+				ps.setLong(3, time);
 				ps.executeUpdate();
 			}
 		} catch (SQLException ex) {

@@ -25,6 +25,7 @@ public final class Property {
 		if (file.exists()) {
 			load();
 		} else {
+			System.out.println("No properties file was found, building a new one.");
 			save();
 		}
 	}

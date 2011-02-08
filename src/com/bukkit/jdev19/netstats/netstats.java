@@ -11,6 +11,7 @@ import org.bukkit.plugin.PluginManager;
 
 public class Netstats extends JavaPlugin {
 	private final NetPlayerListener playerListener = new NetPlayerListener(this);
+	public static Property properties = new Property("plugins/Netstats/config.yml");
 	
 	public Netstats(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
@@ -18,7 +19,8 @@ public class Netstats extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		System.out.println("Netstats has been disabled.");
+		PluginDescriptionFile pdf = this.getDescription();
+		System.out.println("["+pdf.getName()+"] v"+pdf.getVersion()+" has been disabled.");
 	}
 	
 	@Override
@@ -26,8 +28,10 @@ public class Netstats extends JavaPlugin {
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_KICK, this.playerListener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_COMMAND, this.playerListener, Event.Priority.Normal, this);
 		
-		PluginDescriptionFile pdfFile = this.getDescription();
-		System.out.println(pdfFile.getName()+" version "+pdfFile.getVersion()+" has been enabled.");
+		PluginDescriptionFile pdf = this.getDescription();
+		System.out.println("["+pdf.getName()+"] v"+pdf.getVersion()+" has been enabled.");
 	}
 }

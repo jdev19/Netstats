@@ -1,12 +1,13 @@
 package com.bukkit.jdev19.Netstats;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
 
 public class NetPlayerListener extends PlayerListener {
 	public static Netstats plugin;
-	private static Property propfile = new Property("plugins/Netstats/netstats.properties");
+	private static Property propfile = Netstats.properties;
 	private static String host = propfile.getString("host");
 	private static String database = propfile.getString("database");
 	private static String username = propfile.getString("username");
@@ -28,5 +29,20 @@ public class NetPlayerListener extends PlayerListener {
 		Player player = event.getPlayer();
 		long time = System.currentTimeMillis();
 		db.setData(player.getName(), time, "leave");
+	}
+	
+	public void onPlayerKick(PlayerEvent event) {
+		Player player = event.getPlayer();
+		long time = System.currentTimeMillis();
+		db.setData(player.getName(), time, "leave");
+	}
+	
+	public void onPlayerCommand(PlayerChatEvent event) {
+		String[] split = event.getMessage().split(" ");
+		Player player = event.getPlayer();
+		if (split[0].equalsIgnoreCase("/netstats") && (split[1].equalsIgnoreCase("load") || (split[1].equalsIgnoreCase("-l")))) {
+			player.sendMessage("Reloading config file...done.");
+			propfile.load();
+		}
 	}
 }
