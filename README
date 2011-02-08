@@ -1,0 +1,14 @@
+Joint project of Josh Devecka and John-Michael Glenn.
+
+This is a very simple Bukkit plugin to send user and time data to a database
+for storage until the data is later pulled to be displayed however you desire.
+Our method is to send the date upon joining and quitting a server and
+calculating how long the user has been on as well as seeing if they are still
+connected. This is a basic way to track your users and see who's been on, how
+long they've been on, when they were last on, as well as seeing how many users
+are currently online and since the data is stored in a database you can easily
+view the data on the web.
+
+Feel free to use the code however you'd like and compile the plugin yourself
+if you want. Just please leave us some credit if you continue to build upon
+the plugin. It did take a while and was our first time learning Java. Thanks.
