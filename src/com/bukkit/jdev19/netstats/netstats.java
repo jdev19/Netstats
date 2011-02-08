@@ -1,4 +1,4 @@
-package com.bukkit.jdev19.netstats;
+package com.bukkit.jdev19.Netstats;
 
 import java.io.File;
 
@@ -9,16 +9,16 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 
-public class netstats extends JavaPlugin {
+public class Netstats extends JavaPlugin {
 	private final NetPlayerListener playerListener = new NetPlayerListener(this);
 	
-	public netstats(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
+	public Netstats(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 	}
 	
 	@Override
 	public void onDisable() {
-		System.out.println("netstats Disabled");
+		System.out.println("Netstats has been disabled.");
 	}
 	
 	@Override
@@ -28,6 +28,6 @@ public class netstats extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Event.Priority.Normal, this);
 		
 		PluginDescriptionFile pdfFile = this.getDescription();
-		System.out.println(pdfFile.getName()+" version "+pdfFile.getVersion()+" is enabled.");
+		System.out.println(pdfFile.getName()+" version "+pdfFile.getVersion()+" has been enabled.");
 	}
 }
