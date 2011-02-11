@@ -4,7 +4,7 @@
 /.settings
 
 # OS X "dust"
-/.DS_Store
+.DS_Store
 
 # build files
 /target
