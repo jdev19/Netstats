@@ -29,7 +29,6 @@ public class Netstats extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_KICK, this.playerListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_COMMAND, this.playerListener, Event.Priority.Normal, this);
 		
 		PluginDescriptionFile pdf = this.getDescription();
 		System.out.println("["+pdf.getName()+"] v"+pdf.getVersion()+" has been enabled.");

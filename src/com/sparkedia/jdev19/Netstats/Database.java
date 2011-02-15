@@ -1,5 +1,6 @@
 package com.sparkedia.jdev19.Netstats;
 
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -63,7 +64,7 @@ public class Database {
 		return has;
 	}
 
-	public void setData(String name, long time, String dest) {
+	public void setData(String name, long time, String dest, InetSocketAddress IP) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
