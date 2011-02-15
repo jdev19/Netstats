@@ -9,7 +9,7 @@ mysql_select_db($mysql_db) or die (mysql_error());
 $res = mysql_query("SELECT * from $mysql_table");
 
 //Start Table
-echo "<table border ='1'><tr><th width=192px>Name</th><th width=130px>Last Login</th><th width=130px>Last Seen</th><th width=80px>Play Time</th><th width=50px>Status</th></tr>";
+echo "<table border ='1'><tr><th width=192px>Name</th><th width=130px>Last Login</th><th width=130px>Last Seen</th><th width=80px>Play Time</th><th width=50px>Status</th><th>Player IP</th></tr>";
 while($row = mysql_fetch_array($res)){
 	$name = $row['name'];
 	$login = $row['enter'];
