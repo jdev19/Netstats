@@ -9,14 +9,23 @@ mysql_select_db($mysql_db) or die (mysql_error());
 $res = mysql_query("SELECT * from $mysql_table");
 
 //Start Table
-echo "<table border ='1'><tr><th width=192px>Name</th><th width=130px>Last Login</th><th width=130px>Last Seen</th><th width=80px>Play Time</th><th width=50px>Status</th><th>Player IP</th></tr>";
+echo "<table border ='1'>";
+echo "<tr><th width=192px>Name</th>";
+echo "<th width=130px>Last Login</th>";
+echo "<th width=130px>Last Seen</th>";
+echo "<th width=80px>Play Time</th>";
+echo "<th width=50px>Status</th>";
+/* Uncomment (remove //) to include Player IP in table, scroll down and uncomment below as well. */
+//echo "<th>Player IP</th>";
+echo "</tr>";
+
 while($row = mysql_fetch_array($res)){
 	$name = $row['name'];
 	$login = $row['enter'];
 	$logout = $row['logout'];
 	$total = $row['total'];
 	$status = $row['status'];
-        $ip = $row['ip'];
+    $ip = $row['ip'];
     
 //Gather milliseconds from timestamp and convert to human readable time
 $inSeconds = $login / 1000;
@@ -62,18 +71,16 @@ if($status == 1){
     } else {
     $status2 = "Offline";
     }
-
 echo "<tr>"
 echo "<td>" . $name . "</td>";
 echo "<td>" . $inDate . "</td>";
 echo "<td>" . $longago . " ago</td>";
 echo "<td>" . $playtime . "</td>";
 echo "<td>" . $status2 . "</td>";
-/* Uncomment to include player IP in table */
 //echo "<td>" . $ip . "</td>";
-
 echo "</tr>";
 }
+
 
 echo "</table>";
 ?>
