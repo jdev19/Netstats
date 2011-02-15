@@ -1,4 +1,10 @@
 <?php
+/* ----------------------------------------------
+File Created by Josh Devecka(Jdev19)
+You may use the code as you wish,
+but please give me some credit.
+-------------------------------------------------*/
+
 include("config.php");
 
 date_default_timezone_set(date_default_timezone_get());
