@@ -1,6 +1,5 @@
 package com.sparkedia.jdev19.Netstats;
 
-import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -64,7 +63,7 @@ public class Database {
 		return has;
 	}
 
-	public void setData(String name, long time, String dest, InetSocketAddress IP) {
+	public void setData(String name, long time, String dest, String ip) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -73,10 +72,11 @@ public class Database {
 
 			if (hasData(name)) {
 				if (dest == "enter") {
-					ps = con.prepareStatement("UPDATE players SET enter = ?, logout = ?, status = 1 WHERE name = ?");
+					ps = con.prepareStatement("UPDATE players SET enter = ?, logout = ?, status = 1, ip = ? WHERE name = ?");
 					ps.setLong(1, time);
 					ps.setLong(2, time);
-					ps.setString(3, name);
+					ps.setString(3, ip);
+					ps.setString(4, name);
 					ps.executeUpdate();
 				} else if (dest == "leave") {
 					ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0 WHERE name = ?");
@@ -97,10 +97,11 @@ public class Database {
 					}
 				}
 			} else {
-				ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status) VALUES(null,?,?,?,0,1)");
+				ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status, ip) VALUES(null,?,?,?,0,1,?)");
 				ps.setString(1, name);
 				ps.setLong(2, time);
 				ps.setLong(3, time);
+				ps.setString(4, ip);
 				ps.executeUpdate();
 			}
 		} catch (SQLException ex) {

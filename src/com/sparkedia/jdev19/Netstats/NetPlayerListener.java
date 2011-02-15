@@ -3,7 +3,6 @@ package com.sparkedia.jdev19.Netstats;
 import java.net.InetSocketAddress;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
 
@@ -25,20 +24,29 @@ public class NetPlayerListener extends PlayerListener {
 		Player player = event.getPlayer();
 		long time = System.currentTimeMillis();
 		InetSocketAddress IP = player.getAddress();
-		db.setData(player.getName(), time, "enter", IP);
+		int port = IP.getPort();
+		String ip = IP.toString().replace("/", "");
+		ip = ip.replace(":"+port, "");
+		db.setData(player.getName(), time, "enter", ip);
 	}
 	
 	public void onPlayerQuit(PlayerEvent event) {
 		Player player = event.getPlayer();
 		long time = System.currentTimeMillis();
 		InetSocketAddress IP = player.getAddress();
-		db.setData(player.getName(), time, "leave", IP);
+		int port = IP.getPort();
+		String ip = IP.toString().replace("/", "");
+		ip = ip.replace(":"+port, "");
+		db.setData(player.getName(), time, "leave", ip);
 	}
 	
 	public void onPlayerKick(PlayerEvent event) {
 		Player player = event.getPlayer();
 		long time = System.currentTimeMillis();
 		InetSocketAddress IP = player.getAddress();
-		db.setData(player.getName(), time, "leave", IP);
+		int port = IP.getPort();
+		String ip = IP.toString().replace("/", "");
+		ip = ip.replace(":"+port, "");
+		db.setData(player.getName(), time, "leave", ip);
 	}
 }
