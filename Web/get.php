@@ -77,6 +77,7 @@ echo "<td>" . $inDate . "</td>";
 echo "<td>" . $longago . " ago</td>";
 echo "<td>" . $playtime . "</td>";
 echo "<td>" . $status2 . "</td>";
+/* Uncomment line below to include IP data in table */
 //echo "<td>" . $ip . "</td>";
 echo "</tr>";
 }
