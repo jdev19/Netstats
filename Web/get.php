@@ -77,7 +77,7 @@ if($status == 1){
     } else {
     $status2 = "Offline";
     }
-echo "<tr>"
+echo "<tr>";
 echo "<td>" . $name . "</td>";
 echo "<td>" . $inDate . "</td>";
 echo "<td>" . $longago . " ago</td>";
