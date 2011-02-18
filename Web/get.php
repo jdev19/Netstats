@@ -28,11 +28,11 @@ echo "<th>Play Time</th>";
 echo "</tr>";
 
 while($row = mysql_fetch_array($res)){
-	$name = $row['name'];
-	$login = $row['enter'];
-	$logout = $row['logout'];
-	$total = $row['total'];
-	$status = $row['status'];
+    $name = $row['name'];
+    $login = $row['enter'];
+    $logout = $row['logout'];
+    $total = $row['total'];
+    $status = $row['status'];
     $ip = $row['ip'];
     $broken = $row['broken'];
     $placed = $row['placed'];
