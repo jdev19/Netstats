@@ -17,10 +17,12 @@ $res = mysql_query("SELECT * from $mysql_table");
 //Start Table
 echo "<table border ='1'>";
 echo "<tr><th width=192px>Name</th>";
-echo "<th width=130px>Last Login</th>";
-echo "<th width=130px>Last Seen</th>";
-echo "<th width=80px>Play Time</th>";
-echo "<th width=50px>Status</th>";
+echo "<th>Blocks Broken</th>";
+echo "<th>Blocks Placed</th>";
+echo "<th>Deaths</th>";
+echo "<th>Last Login</th>";
+echo "<th>Last Seen</th>";
+echo "<th>Play Time</th>";
 /* Uncomment (remove //) to include Player IP in table, scroll down and uncomment below as well. */
 //echo "<th>Player IP</th>";
 echo "</tr>";
@@ -32,6 +34,9 @@ while($row = mysql_fetch_array($res)){
 	$total = $row['total'];
 	$status = $row['status'];
     $ip = $row['ip'];
+    $broken = $row['broken'];
+    $placed = $row['placed'];
+    $deaths = $row['deaths'];
     
 //Gather milliseconds from timestamp and convert to human readable time
 $inSeconds = $login / 1000;
@@ -72,22 +77,23 @@ $longago = $pday . "d " . $phr . "h " . $pmin . "m " . $psec . "s";
 //put in readable format
 $playtime = $hours . "h " . $minutes . "m " . $seconds . "s";
 
-if($status == 1){
-    $status2 = "Online";
-    } else {
-    $status2 = "Offline";
-    }
+//Start table data
 echo "<tr>";
-echo "<td>" . $name . "</td>";
+if ($status == 1) {
+    echo "<td style = 'color:green'>" . $name . "</td>";
+    } else {
+    echo "<td style = 'color:red'>" . $name . "</td>";
+    }
+echo "<td>" . $broken . "</td>";
+echo "<td>" . $placed . "</td>";
+echo "<td>" . $deaths . "</td>";
 echo "<td>" . $inDate . "</td>";
 echo "<td>" . $longago . " ago</td>";
 echo "<td>" . $playtime . "</td>";
-echo "<td>" . $status2 . "</td>";
 /* Uncomment line below to include IP data in table */
 //echo "<td>" . $ip . "</td>";
 echo "</tr>";
 }
-
-
 echo "</table>";
+
 ?>
