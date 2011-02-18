@@ -32,16 +32,18 @@ public class NetBlockListener extends BlockListener {
 			//save data from propfile and reset it
 			long tbreaks = Netstats.userProp.getLong("broken");
 			long tplaced = Netstats.userProp.getLong("placed");
+			int deaths = Netstats.userProp.getInt("deaths");
 			long now = System.currentTimeMillis();
 			long total = Netstats.userProp.getLong("total");
 			long enter = Netstats.userProp.getLong("enter");
 			total = total+(now-enter);
-			db.update(player.getName(), tbreaks, tplaced, now, total);
+			db.update(player.getName(), tbreaks, tplaced, now, total, deaths);
 			//reset propfile data back to nothing
 			Netstats.userProp.setLong("broken", 0);
 			Netstats.userProp.setLong("placed", 0);
 			Netstats.userProp.setLong("enter", now);
 			Netstats.userProp.setLong("total", 0);
+			Netstats.userProp.setInt("deaths", 0);
 			actions = 0;
 			broken = 0;
 			placed = 0;
@@ -67,16 +69,18 @@ public class NetBlockListener extends BlockListener {
 			//save data from propfile and reset it
 			long tbreaks = Netstats.userProp.getLong("broken");
 			long tplaced = Netstats.userProp.getLong("placed");
+			int deaths = Netstats.userProp.getInt("deaths");
 			long now = System.currentTimeMillis();
 			long total = Netstats.userProp.getLong("total");
 			long enter = Netstats.userProp.getLong("enter");
 			total = total+(now-enter);
-			db.update(player.getName(), tbreaks, tplaced, now, total);
+			db.update(player.getName(), tbreaks, tplaced, now, total, deaths);
 			//reset propfile data back to nothing
 			Netstats.userProp.setLong("broken", 0);
 			Netstats.userProp.setLong("placed", 0);
 			Netstats.userProp.setLong("enter", now);
 			Netstats.userProp.setLong("total", 0);
+			Netstats.userProp.setInt("deaths", 0);
 			actions = 0;
 			broken = 0;
 			placed = 0;

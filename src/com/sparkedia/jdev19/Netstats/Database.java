@@ -65,18 +65,19 @@ public class Database {
 		return has;
 	}
 	
-	public void update(String name, long broken, long placed, long now, long total) {
+	public void update(String name, long broken, long placed, long now, long total, int deaths) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
 			con = connection();
 			con = connection();
-			ps = con.prepareStatement("UPDATE players SET broken = broken+?, placed = placed+?, total = total+?, enter = ? WHERE name = ?");
+			ps = con.prepareStatement("UPDATE players SET broken = broken+?, placed = placed+?, total = total+?, enter = ?, deaths = deaths+? WHERE name = ?");
 			ps.setLong(1, broken);
 			ps.setLong(2, placed);
 			ps.setLong(3, total);
 			ps.setLong(4, now);
-			ps.setString(5, name);
+			ps.setInt(5, deaths);
+			ps.setString(6, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
 			log.severe("[Netstats]: Could not set data for "+ex);
@@ -129,17 +130,18 @@ public class Database {
 		}
 	}
 	
-	public void leave(String name, long broken, long placed, long now, long total) {
+	public void leave(String name, long broken, long placed, long now, long total, int deaths) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
 			con = connection();
-			ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0, total = total+?, broken = broken+?, placed = placed+? WHERE name = ?");
+			ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0, total = total+?, broken = broken+?, placed = placed+?, deaths = deaths+? WHERE name = ?");
 			ps.setLong(1, now);
 			ps.setLong(2, total);
 			ps.setLong(3, broken);
 			ps.setLong(4, placed);
-			ps.setString(5, name);
+			ps.setInt(5, deaths);
+			ps.setString(6, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
 			log.severe("[Netstats]: Could not set data for "+ex);
@@ -167,7 +169,7 @@ public class Database {
 		PreparedStatement ps = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status, ip) VALUES(null, ?, ?, ?, 0, 1, ?)");
+			ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status, ip, broken, placed, deaths) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0)");
 			ps.setString(1, name);
 			ps.setLong(2, time);
 			ps.setLong(3, time);

@@ -44,9 +44,10 @@ public class NetPlayerListener extends PlayerListener {
 		long placed = Netstats.userProp.getLong("placed");
 		long enter = Netstats.userProp.getLong("enter");
 		long total = Netstats.userProp.getLong("total");
+		int deaths = Netstats.userProp.getInt("deaths");
 		long now = System.currentTimeMillis();
 		total = total+(now-enter);
-		db.leave(player.getName(), broken, placed, now, total);
+		db.leave(player.getName(), broken, placed, now, total, deaths);
 	}
 	
 	public void onPlayerKick(PlayerEvent event) {
@@ -56,8 +57,9 @@ public class NetPlayerListener extends PlayerListener {
 		long placed = Netstats.userProp.getLong("placed");
 		long enter = Netstats.userProp.getLong("enter");
 		long total = Netstats.userProp.getLong("total");
+		int deaths = Netstats.userProp.getInt("deaths");
 		long now = System.currentTimeMillis();
 		total = total+(now-enter);
-		db.leave(player.getName(), broken, placed, now, total);
+		db.leave(player.getName(), broken, placed, now, total, deaths);
 	}
 }
