@@ -1,5 +1,7 @@
 package com.sparkedia.jdev19.Netstats;
 
+import java.util.logging.Logger;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Database {
+	protected static final Logger log = Logger.getLogger("Minecraft");
 	public Type database;
 	public int i = 0;
 	private String host;
@@ -29,21 +32,20 @@ public class Database {
 
 	public boolean hasData(String name) {
 		boolean has = false;
-
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("SELECT total FROM players WHERE name = ?" + (this.database.equals(Type.SQLITE) ? "" : " LIMIT 1"));
+			ps = con.prepareStatement("SELECT total FROM players WHERE name = ? LIMIT 1");
 			ps.setString(1, name);
 			rs = ps.executeQuery();
 			has = rs.next();
 		} catch (SQLException ex) {
-			System.out.println("[Netstats]: Could not fetch data for " + (this.database.equals(Type.SQLITE) ? "sqlite" : "mysql") + ": " + ex);
+			log.severe("[Netstats]: Could not fetch data for mysql: "+ex);
 			return false;
 		} catch (ClassNotFoundException e) {
-			System.out.println("[Netstats]: Database connector not found for " + (this.database.equals(Type.SQLITE) ? "sqlite" : "mysql") + ": " + e);
+			log.severe("[Netstats]: Database connector not found for mysql: "+e);
 			return false;
 		} finally {
 			try	{
@@ -57,64 +59,33 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				System.out.println("[Netstats]: Failed to close connection");
+				log.severe("[Netstats]: Failed to close connection");
 			}
 		}
 		return has;
 	}
-
-	public void setData(String name, long time, String dest, String ip) {
+	
+	public void update(String name, long broken, long placed, long now, long total) {
 		Connection con = null;
 		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try	{
+		try {
 			con = connection();
-
-			if (hasData(name)) {
-				if (dest == "enter") {
-					ps = con.prepareStatement("UPDATE players SET enter = ?, logout = ?, status = 1, ip = ? WHERE name = ?");
-					ps.setLong(1, time);
-					ps.setLong(2, time);
-					ps.setString(3, ip);
-					ps.setString(4, name);
-					ps.executeUpdate();
-				} else if (dest == "leave") {
-					ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0 WHERE name = ?");
-					ps.setLong(1, time);
-					ps.setString(2, name);
-					ps.executeUpdate();
-					ps = con.prepareStatement("SELECT enter, total FROM players WHERE name = ?" + (this.database.equals(Type.SQLITE) ? "" : " LIMIT 1"));
-					ps.setString(1, name);
-					rs = ps.executeQuery();
-					if (rs.next()) {
-						long enter = rs.getLong("enter");
-						long total = rs.getLong("total");
-						total = total+(time-enter);
-						ps = con.prepareStatement("UPDATE players SET total = ? WHERE name = ?");
-						ps.setLong(1, total);
-						ps.setString(2, name);
-						ps.executeUpdate();
-					}
-				}
-			} else {
-				ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status, ip) VALUES(null,?,?,?,0,1,?)");
-				ps.setString(1, name);
-				ps.setLong(2, time);
-				ps.setLong(3, time);
-				ps.setString(4, ip);
-				ps.executeUpdate();
-			}
+			con = connection();
+			ps = con.prepareStatement("UPDATE players SET broken = broken+?, placed = placed+?, total = total+?, enter = ? WHERE name = ?");
+			ps.setLong(1, broken);
+			ps.setLong(2, placed);
+			ps.setLong(3, total);
+			ps.setLong(4, now);
+			ps.setString(5, name);
+			ps.executeUpdate();
 		} catch (SQLException ex) {
-			System.out.println("[Netstats]: Could not set data for " + (this.database.equals(Type.SQLITE) ? "sqlite" : "mysql") + ": " + ex);
+			log.severe("[Netstats]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			System.out.println("[Netstats]: Database connector not found for " + (this.database.equals(Type.SQLITE) ? "sqlite" : "mysql") + ": " + e);
+			log.severe("[Netstats]: Database connector not found for mysql: "+e);
 			return;
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
 				if (ps != null) {
 					ps.close();
 				}
@@ -122,14 +93,108 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				System.out.println("[Netstats]: Failed to close connection.");
+				log.severe("[Netstats]: Failed to close connection.");
+			}
+		}
+	}
+	
+	public void join(String name, long time, String ip) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
+			con = connection();
+			ps = con.prepareStatement("UPDATE players SET enter = ?, logout = ?, status = 1, ip = ? WHERE name = ?");
+			ps.setLong(1, time);
+			ps.setLong(2, time);
+			ps.setString(3, ip);
+			ps.setString(4, name);
+			ps.executeUpdate();
+		} catch (SQLException ex) {
+			log.severe("[Netstats]: Could not set data for "+ex);
+			return;
+		} catch (ClassNotFoundException e) {
+			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			return;
+		} finally {
+			try {
+				if (ps != null) {
+					ps.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe("[Netstats]: Failed to close connection.");
+			}
+		}
+	}
+	
+	public void leave(String name, long broken, long placed, long now, long total) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
+			con = connection();
+			ps = con.prepareStatement("UPDATE players SET logout = ?, status = 0, total = total+?, broken = broken+?, placed = placed+? WHERE name = ?");
+			ps.setLong(1, now);
+			ps.setLong(2, total);
+			ps.setLong(3, broken);
+			ps.setLong(4, placed);
+			ps.setString(5, name);
+			ps.executeUpdate();
+		} catch (SQLException ex) {
+			log.severe("[Netstats]: Could not set data for "+ex);
+			return;
+		} catch (ClassNotFoundException e) {
+			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			return;
+		} finally {
+			try {
+				if (ps != null) {
+					ps.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe("[Netstats]: Failed to close connection.");
+			}
+		}
+	}
+	
+	//register the new user
+	public void register(String name, long time, String ip) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try	{
+			con = connection();
+			ps = con.prepareStatement("INSERT INTO players (id, name, enter, logout, total, status, ip) VALUES(null, ?, ?, ?, 0, 1, ?)");
+			ps.setString(1, name);
+			ps.setLong(2, time);
+			ps.setLong(3, time);
+			ps.setString(4, ip);
+			ps.executeUpdate();
+		} catch (SQLException ex) {
+			log.severe("[Netstats]: Could not set data for "+ex);
+			return;
+		} catch (ClassNotFoundException e) {
+			log.severe("[Netstats]: Database connector not found for "+e);
+			return;
+		} finally {
+			try {
+				if (ps != null) {
+					ps.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe("[Netstats]: Failed to close connection.");
 			}
 		}
 	}
 
 	public static enum Type
 	{
-		SQLITE, 
 		MYSQL;
 	}
 }

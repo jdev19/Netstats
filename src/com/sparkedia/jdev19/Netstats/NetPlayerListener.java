@@ -22,31 +22,42 @@ public class NetPlayerListener extends PlayerListener {
 	
 	public void onPlayerJoin(PlayerEvent event) {
 		Player player = event.getPlayer();
+		Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
 		long time = System.currentTimeMillis();
 		InetSocketAddress IP = player.getAddress();
 		int port = IP.getPort();
 		String ip = IP.toString().replace("/", "");
 		ip = ip.replace(":"+port, "");
-		db.setData(player.getName(), time, "enter", ip);
+		if (db.hasData(player.getName())) {
+			db.join(player.getName(), time, ip);
+			Netstats.userProp.setLong("enter", time);
+		} else {
+			db.register(player.getName(), time, ip);
+			Netstats.userProp.setLong("enter", time);
+		}
 	}
 	
 	public void onPlayerQuit(PlayerEvent event) {
 		Player player = event.getPlayer();
-		long time = System.currentTimeMillis();
-		InetSocketAddress IP = player.getAddress();
-		int port = IP.getPort();
-		String ip = IP.toString().replace("/", "");
-		ip = ip.replace(":"+port, "");
-		db.setData(player.getName(), time, "leave", ip);
+		//grab propfile data and store it all
+		long broken = Netstats.userProp.getLong("broken");
+		long placed = Netstats.userProp.getLong("placed");
+		long enter = Netstats.userProp.getLong("enter");
+		long total = Netstats.userProp.getLong("total");
+		long now = System.currentTimeMillis();
+		total = total+(now-enter);
+		db.leave(player.getName(), broken, placed, now, total);
 	}
 	
 	public void onPlayerKick(PlayerEvent event) {
 		Player player = event.getPlayer();
-		long time = System.currentTimeMillis();
-		InetSocketAddress IP = player.getAddress();
-		int port = IP.getPort();
-		String ip = IP.toString().replace("/", "");
-		ip = ip.replace(":"+port, "");
-		db.setData(player.getName(), time, "leave", ip);
+		//grab propfile data and store it all
+		long broken = Netstats.userProp.getLong("broken");
+		long placed = Netstats.userProp.getLong("placed");
+		long enter = Netstats.userProp.getLong("enter");
+		long total = Netstats.userProp.getLong("total");
+		long now = System.currentTimeMillis();
+		total = total+(now-enter);
+		db.leave(player.getName(), broken, placed, now, total);
 	}
 }

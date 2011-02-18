@@ -34,7 +34,7 @@ public final class Property {
 		try {
 			this.properties.load(new FileInputStream(this.fileName));
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, "Unable to load "+this.fileName, ex);
+			log.log(Level.SEVERE, "[Netstats]: Unable to load "+this.fileName, ex);
 		}
 	}
 
@@ -42,7 +42,7 @@ public final class Property {
 		try {
 			this.properties.store(new FileOutputStream(this.fileName), "Minecraft Properties File");
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, "Unable to save "+this.fileName, ex);
+			log.log(Level.SEVERE, "[Netstats]: Unable to save "+this.fileName, ex);
 		}
 	}
 
