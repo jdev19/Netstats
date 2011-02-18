@@ -12,7 +12,7 @@ date_default_timezone_set(date_default_timezone_get());
 mysql_connect($mysql_host,$mysql_user,$mysql_pass) or die (mysql_error());
 mysql_select_db($mysql_db) or die (mysql_error());
 
-$res = mysql_query("SELECT * from $mysql_table ORDER BY `status` DESC");
+$res = mysql_query("SELECT * from $mysql_table ORDER BY `status` DESC, `name` ASC");
 
 //Start Table
 echo "<table border ='1'>";
