@@ -65,11 +65,42 @@ public class Database {
 		return has;
 	}
 	
-	public void update(String name, long broken, long placed, long now, long total, int deaths) {
+	public void smUpdate(String name, long broken, long placed, long total, int deaths) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
 			con = connection();
+			ps = con.prepareStatement("UPDATE players SET broken = broken+?, placed = placed+?, total = total+?, deaths = deaths+? WHERE name = ?");
+			ps.setLong(1, broken);
+			ps.setLong(2, placed);
+			ps.setLong(3, total);
+			ps.setInt(4, deaths);
+			ps.setString(5, name);
+			ps.executeUpdate();
+		} catch (SQLException ex) {
+			log.severe("[Netstats]: Could not set data for "+ex);
+			return;
+		} catch (ClassNotFoundException e) {
+			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			return;
+		} finally {
+			try {
+				if (ps != null) {
+					ps.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe("[Netstats]: Failed to close connection.");
+			}
+		}
+	}
+	
+	public void update(String name, long broken, long placed, long now, long total, int deaths) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
 			con = connection();
 			ps = con.prepareStatement("UPDATE players SET broken = broken+?, placed = placed+?, total = total+?, enter = ?, deaths = deaths+? WHERE name = ?");
 			ps.setLong(1, broken);

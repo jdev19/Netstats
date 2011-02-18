@@ -1,5 +1,6 @@
 package com.sparkedia.jdev19.Netstats;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 
 import org.bukkit.entity.Player;
@@ -22,7 +23,27 @@ public class NetPlayerListener extends PlayerListener {
 	
 	public void onPlayerJoin(PlayerEvent event) {
 		Player player = event.getPlayer();
-		Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
+		if (!(new File("plugins/Netstats/players/"+player.getName()+".stats")).exists()) {
+			Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
+			Netstats.userProp.setLong("broken", 0);
+			Netstats.userProp.setLong("placed", 0);
+			Netstats.userProp.setLong("total", 0);
+			Netstats.userProp.setLong("deaths", 0);
+		} else {
+			Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
+		}
+		if (Netstats.userProp.getLong("broken") != 0 || Netstats.userProp.getLong("placed") != 0 || Netstats.userProp.getLong("total") != 0 || Netstats.userProp.getInt("deaths") != 0) {
+			player.sendMessage("Previous data was found");
+			long broken = Netstats.userProp.getLong("broken");
+			long placed = Netstats.userProp.getLong("placed");
+			long total = Netstats.userProp.getLong("total");
+			int deaths = Netstats.userProp.getInt("deaths");
+			db.smUpdate(player.getName(), broken, placed, total, deaths);
+			Netstats.userProp.setLong("broken", 0);
+			Netstats.userProp.setLong("placed", 0);
+			Netstats.userProp.setLong("total", 0);
+			Netstats.userProp.setLong("deaths", 0);
+		}
 		long time = System.currentTimeMillis();
 		InetSocketAddress IP = player.getAddress();
 		int port = IP.getPort();
@@ -48,6 +69,10 @@ public class NetPlayerListener extends PlayerListener {
 		long now = System.currentTimeMillis();
 		total = total+(now-enter);
 		db.leave(player.getName(), broken, placed, now, total, deaths);
+		Netstats.userProp.setLong("broken", 0);
+		Netstats.userProp.setLong("placed", 0);
+		Netstats.userProp.setLong("total", 0);
+		Netstats.userProp.setInt("deaths", 0);
 	}
 	
 	public void onPlayerKick(PlayerEvent event) {
@@ -61,5 +86,9 @@ public class NetPlayerListener extends PlayerListener {
 		long now = System.currentTimeMillis();
 		total = total+(now-enter);
 		db.leave(player.getName(), broken, placed, now, total, deaths);
+		Netstats.userProp.setLong("broken", 0);
+		Netstats.userProp.setLong("placed", 0);
+		Netstats.userProp.setLong("total", 0);
+		Netstats.userProp.setInt("deaths", 0);
 	}
 }
