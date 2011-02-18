@@ -55,6 +55,9 @@ $minutes = $total % 60;
 $total = floor($total / 60);
 $hours = $total % 24;
 
+$total = floor($total / 24);
+$days = $total % 24;
+
 //calculate how long ago player was on
 $etime = time() * 1000;
 $ago = ($etime - $logout);
@@ -75,7 +78,7 @@ $pday = $ago %24;
 $longago = $pday . "d " . $phr . "h " . $pmin . "m " . $psec . "s";
 
 //put in readable format
-$playtime = $hours . "h " . $minutes . "m " . $seconds . "s";
+$playtime = $days . "d " . $hours . "h " . $minutes . "m ";
 
 //Start table data
 echo "<tr>";
