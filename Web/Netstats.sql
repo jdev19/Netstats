@@ -4,7 +4,7 @@
 #
 # Host: localhost (MySQL 5.1.48)
 # Database: minecraft
-# Generation Time: 2011-02-17 19:20:00 -0800
+# Generation Time: 2011-02-17 20:05:52 -0800
 # ************************************************************
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -20,18 +20,17 @@
 # Dump of table players
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `players`;
-
 CREATE TABLE `players` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
-  `enter` bigint(20) NOT NULL,
-  `logout` bigint(20) NOT NULL,
+  `enter` bigint(20) NOT NULL DEFAULT '0',
+  `logout` bigint(20) NOT NULL DEFAULT '0',
   `total` bigint(20) NOT NULL DEFAULT '0',
   `status` tinyint(1) NOT NULL DEFAULT '0',
   `ip` varchar(30) NOT NULL,
   `broken` bigint(20) NOT NULL DEFAULT '0',
   `placed` bigint(20) NOT NULL DEFAULT '0',
+  `deaths` int(5) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
