@@ -19,7 +19,7 @@
 # Dump of table players
 # ------------------------------------------------------------
 
-ALTER TABLE IF EXISTS `players` ADD (
+ALTER TABLE `players` ADD (
   `broken` bigint(20) NOT NULL DEFAULT '0',
   `placed` bigint(20) NOT NULL DEFAULT '0',
   `deaths` int(5) NOT NULL DEFAULT '0');
