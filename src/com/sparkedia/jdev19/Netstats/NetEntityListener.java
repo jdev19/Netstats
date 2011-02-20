@@ -6,9 +6,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 
 public class NetEntityListener extends EntityListener {
-	public static Netstats plugin;
-	public NetEntityListener(Netstats instance) {
-		plugin = instance;
+	public Netstats plugin;
+	
+	public NetEntityListener(Netstats plugin) {
+		this.plugin = plugin;
 	}
 	
 	public void onEntityDeath(EntityDeathEvent event) {

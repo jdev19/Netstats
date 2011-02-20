@@ -6,7 +6,7 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public class NetBlockListener extends BlockListener {
-	public static Netstats plugin;
+	public Netstats plugin;
 	private static Property propfile = Netstats.properties;
 	private static String host = propfile.getString("host");
 	private static String database = propfile.getString("database");
@@ -18,8 +18,8 @@ public class NetBlockListener extends BlockListener {
 	public int placed = 0;
 	private static Database db = new Database(Database.Type.MYSQL, host, database, username, password);
 	
-	public NetBlockListener(Netstats instance) {
-		plugin = instance;
+	public NetBlockListener(Netstats plugin) {
+		this.plugin = plugin;
 	}
 	
 	public void onBlockBreak(BlockBreakEvent event) {

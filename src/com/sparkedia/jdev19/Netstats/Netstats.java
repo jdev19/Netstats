@@ -3,10 +3,8 @@ package com.sparkedia.jdev19.Netstats;
 import java.io.File;
 import java.util.logging.Logger;
 
-import org.bukkit.Server;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 
@@ -17,10 +15,6 @@ public class Netstats extends JavaPlugin {
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	public static Property properties = new Property("plugins/Netstats/config.txt");
 	public static Property userProp;
-	
-	public Netstats(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
-		super(pluginLoader, instance, desc, folder, plugin, cLoader);
-	}
 	
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();

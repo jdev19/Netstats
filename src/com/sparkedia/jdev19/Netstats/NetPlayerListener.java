@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
 
 public class NetPlayerListener extends PlayerListener {
-	public static Netstats plugin;
+	public Netstats plugin;
 	private static Property propfile = Netstats.properties;
 	private static String host = propfile.getString("host");
 	private static String database = propfile.getString("database");
@@ -17,8 +17,8 @@ public class NetPlayerListener extends PlayerListener {
 	private static Database db = new Database(Database.Type.MYSQL, host, database, username, password);
 	
 	
-	public NetPlayerListener(Netstats instance) {
-		plugin = instance;
+	public NetPlayerListener(Netstats plugin) {
+		this.plugin = plugin;
 	}
 	
 	public void onPlayerJoin(PlayerEvent event) {
