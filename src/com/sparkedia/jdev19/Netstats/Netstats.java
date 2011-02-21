@@ -9,11 +9,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 
 public class Netstats extends JavaPlugin {
-	private final NetPlayerListener playerListener = new NetPlayerListener(this);
-	private final NetBlockListener blockListener = new NetBlockListener(this);
-	private final NetEntityListener entityListener = new NetEntityListener(this);
+	private NetPlayerListener playerListener;
+	private NetBlockListener blockListener;
+	private NetEntityListener entityListener;
 	protected static final Logger log = Logger.getLogger("Minecraft");
-	public static Property properties = new Property("plugins/Netstats/config.txt");
+	public static Property properties = null;
 	public static Property userProp;
 	
 	public void onDisable() {
@@ -22,6 +22,12 @@ public class Netstats extends JavaPlugin {
 	}
 	
 	public void onEnable() {
+		properties = new Property("plugins/Netstats/config.txt");
+		
+		playerListener = new NetPlayerListener(this);
+		blockListener = new NetBlockListener(this);
+		entityListener = new NetEntityListener(this);
+		
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Event.Priority.Normal, this);
@@ -35,9 +41,6 @@ public class Netstats extends JavaPlugin {
 		PluginDescriptionFile pdf = this.getDescription();
 		log.info("["+pdf.getName()+"] v"+pdf.getVersion()+" has been enabled.");
 		
-		if (!(new File("plugins/Netstats").isDirectory())) {
-			(new File("plugins/Netstats")).mkdir();
-		}
 		if (!(new File("plugins/Netstats/players").isDirectory())) {
 			(new File("plugins/Netstats/players")).mkdir();
 		}

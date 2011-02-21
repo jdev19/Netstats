@@ -23,6 +23,10 @@ public class NetBlockListener extends BlockListener {
 	}
 	
 	public void onBlockBreak(BlockBreakEvent event) {
+		if (Netstats.userProp == null) {
+			//They reloaded the plugins, time to re-set the player property files
+			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+		}
 		actions++;
 		broken++;
 		if (actions == updateRate) {
@@ -60,6 +64,10 @@ public class NetBlockListener extends BlockListener {
 	}
 	
 	public void onBlockPlace(BlockPlaceEvent event) {
+		if (Netstats.userProp == null) {
+			//Plugins reset, make sure to re-set the property files
+			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+		}
 		actions++;
 		placed++;
 		if (actions == updateRate) {

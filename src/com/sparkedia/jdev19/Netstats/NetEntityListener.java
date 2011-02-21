@@ -15,6 +15,9 @@ public class NetEntityListener extends EntityListener {
 	public void onEntityDeath(EntityDeathEvent event) {
 		Entity entity = event.getEntity();
 		if (entity instanceof Player) {
+			if (Netstats.userProp == null) {
+				Netstats.userProp = new Property("plugins/Netstats/players/"+((Player)entity).getName()+".stats");
+			}
 			int deaths = Netstats.userProp.getInt("deaths");
 			deaths++;
 			Netstats.userProp.setInt("deaths", deaths);

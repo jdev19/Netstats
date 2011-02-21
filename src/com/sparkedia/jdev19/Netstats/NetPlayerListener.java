@@ -9,11 +9,10 @@ import org.bukkit.event.player.PlayerEvent;
 
 public class NetPlayerListener extends PlayerListener {
 	public Netstats plugin;
-	private static Property propfile = Netstats.properties;
-	private static String host = propfile.getString("host");
-	private static String database = propfile.getString("database");
-	private static String username = propfile.getString("username");
-	private static String password = propfile.getString("password");
+	private static String host = Netstats.properties.getString("host");
+	private static String database = Netstats.properties.getString("database");
+	private static String username = Netstats.properties.getString("username");
+	private static String password = Netstats.properties.getString("password");
 	private static Database db = new Database(Database.Type.MYSQL, host, database, username, password);
 	
 	
@@ -59,6 +58,9 @@ public class NetPlayerListener extends PlayerListener {
 	}
 	
 	public void onPlayerQuit(PlayerEvent event) {
+		if (Netstats.userProp == null) {
+			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+		}
 		Player player = event.getPlayer();
 		//grab propfile data and store it all
 		long broken = Netstats.userProp.getLong("broken");
@@ -76,6 +78,9 @@ public class NetPlayerListener extends PlayerListener {
 	}
 	
 	public void onPlayerKick(PlayerEvent event) {
+		if (Netstats.userProp == null) {
+			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+		}
 		Player player = event.getPlayer();
 		//grab propfile data and store it all
 		long broken = Netstats.userProp.getLong("broken");
