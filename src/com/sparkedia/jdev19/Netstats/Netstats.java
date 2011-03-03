@@ -22,7 +22,9 @@ public class Netstats extends JavaPlugin {
 	}
 	
 	public void onEnable() {
-		properties = new Property("plugins/Netstats/config.txt");
+		if (properties == null) {
+			properties = new Property("plugins/Netstats/config.txt");
+		}
 		
 		playerListener = new NetPlayerListener(this);
 		blockListener = new NetBlockListener(this);

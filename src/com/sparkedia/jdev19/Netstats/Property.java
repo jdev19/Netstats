@@ -31,7 +31,9 @@ public final class Property {
 
 	public void load() {
 		try {
-			this.properties.load(new FileInputStream(this.fileName));
+			FileInputStream inFile = new FileInputStream(this.fileName);
+			this.properties.load(inFile);
+			inFile.close(); // ALWAYS close a file when done with it
 		} catch (IOException ex) {
 			log.log(Level.SEVERE, "[Netstats]: Unable to load "+this.fileName, ex);
 		}
@@ -39,7 +41,9 @@ public final class Property {
 
 	public void save() {
 		try {
-			this.properties.store(new FileOutputStream(this.fileName), "Minecraft Properties File");
+			FileOutputStream outFile = new FileOutputStream(this.fileName);
+			this.properties.store(outFile, "Minecraft Properties File");
+			outFile.close();
 		} catch (IOException ex) {
 			log.log(Level.SEVERE, "[Netstats]: Unable to save "+this.fileName, ex);
 		}
