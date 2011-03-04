@@ -6,26 +6,35 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public class NetBlockListener extends BlockListener {
-	public Netstats plugin;
-	private static Property propfile = Netstats.properties;
-	private static String host = propfile.getString("host");
-	private static String database = propfile.getString("database");
-	private static String username = propfile.getString("username");
-	private static String password = propfile.getString("password");
-	public int updateRate = propfile.getInt("updateRate");
+	protected Netstats plugin;
+	private String pName;
+	protected Property config;
+	protected String host;
+	protected String database;
+	protected String username;
+	protected String password;
+	public int updateRate;
+	protected Database db;
 	public int actions = 0;
 	public int broken = 0;
 	public int placed = 0;
-	private static Database db = new Database(Database.Type.MYSQL, host, database, username, password);
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
+		this.pName = plugin.pName;
+		this.config = Netstats.config;
+		this.host = config.getString("host");
+		this.database = config.getString("database");
+		this.username = config.getString("username");
+		this.password = config.getString("password");
+		this.updateRate = config.getInt("updateRate");
+		this.db = new Database(Database.Type.MYSQL, host, database, username, password, plugin);
 	}
 	
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (Netstats.userProp == null) {
 			//They reloaded the plugins, time to re-set the player property files
-			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
 		}
 		actions++;
 		broken++;
@@ -48,6 +57,7 @@ public class NetBlockListener extends BlockListener {
 			Netstats.userProp.setLong("enter", now);
 			Netstats.userProp.setLong("total", 0);
 			Netstats.userProp.setInt("deaths", 0);
+			//reset watched actions
 			actions = 0;
 			broken = 0;
 			placed = 0;
@@ -66,7 +76,7 @@ public class NetBlockListener extends BlockListener {
 	public void onBlockPlace(BlockPlaceEvent event) {
 		if (Netstats.userProp == null) {
 			//Plugins reset, make sure to re-set the property files
-			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
 		}
 		actions++;
 		placed++;
@@ -89,6 +99,7 @@ public class NetBlockListener extends BlockListener {
 			Netstats.userProp.setLong("enter", now);
 			Netstats.userProp.setLong("total", 0);
 			Netstats.userProp.setInt("deaths", 0);
+			//reset watched data
 			actions = 0;
 			broken = 0;
 			placed = 0;

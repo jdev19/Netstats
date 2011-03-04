@@ -8,28 +8,30 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
 
 public class NetPlayerListener extends PlayerListener {
-	public Netstats plugin;
-	private static String host = Netstats.properties.getString("host");
-	private static String database = Netstats.properties.getString("database");
-	private static String username = Netstats.properties.getString("username");
-	private static String password = Netstats.properties.getString("password");
-	private static Database db = new Database(Database.Type.MYSQL, host, database, username, password);
-	
+	protected Netstats plugin;
+	protected Database db;
+	private String pName;
 	
 	public NetPlayerListener(Netstats plugin) {
 		this.plugin = plugin;
+		this.pName = plugin.pName;
+		String host = Netstats.config.getString("host");
+		String database = Netstats.config.getString("database");
+		String username = Netstats.config.getString("username");
+		String password = Netstats.config.getString("password");
+		this.db = new Database(Database.Type.MYSQL, host, database, username, password, plugin);
 	}
 	
 	public void onPlayerJoin(PlayerEvent event) {
 		Player player = event.getPlayer();
 		if (!(new File("plugins/Netstats/players/"+player.getName()+".stats")).exists()) {
-			Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+player.getName()+".stats", plugin);
 			Netstats.userProp.setLong("broken", 0);
 			Netstats.userProp.setLong("placed", 0);
 			Netstats.userProp.setLong("total", 0);
 			Netstats.userProp.setLong("deaths", 0);
 		} else {
-			Netstats.userProp = new Property("plugins/Netstats/players/"+player.getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+player.getName()+".stats", plugin);
 		}
 		if (Netstats.userProp.getLong("broken") != 0 || Netstats.userProp.getLong("placed") != 0 || Netstats.userProp.getLong("total") != 0 || Netstats.userProp.getInt("deaths") != 0) {
 			player.sendMessage("Previous data was found");
@@ -59,7 +61,7 @@ public class NetPlayerListener extends PlayerListener {
 	
 	public void onPlayerQuit(PlayerEvent event) {
 		if (Netstats.userProp == null) {
-			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
 		}
 		Player player = event.getPlayer();
 		//grab propfile data and store it all
@@ -79,7 +81,7 @@ public class NetPlayerListener extends PlayerListener {
 	
 	public void onPlayerKick(PlayerEvent event) {
 		if (Netstats.userProp == null) {
-			Netstats.userProp = new Property("plugins/Netstats/players/"+event.getPlayer().getName()+".stats");
+			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
 		}
 		Player player = event.getPlayer();
 		//grab propfile data and store it all

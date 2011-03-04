@@ -9,15 +9,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Database {
+	protected Netstats plugin;
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	public Type database;
 	public int i = 0;
-	private String host;
-	private String db;
-	private String username;
-	private String password;
+	private String pName;
+	protected String host;
+	protected String db;
+	protected String username;
+	protected String password;
 	
-	public Database(Type database, String host, String db, String username, String password) {
+	public Database(Type database, String host, String db, String username, String password, Netstats plugin) {
+		this.plugin = plugin;
+		this.pName = plugin.pName;
 		this.database = database;
 		this.host = host;
 		this.db = db;
@@ -42,10 +46,10 @@ public class Database {
 			rs = ps.executeQuery();
 			has = rs.next();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not fetch data for mysql: "+ex);
+			log.severe("["+pName+"]: Could not fetch data for mysql: "+ex);
 			return false;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			log.severe("["+pName+"]: Database connector not found for mysql: "+e);
 			return false;
 		} finally {
 			try	{
@@ -59,7 +63,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection");
+				log.severe("["+pName+"]: Failed to close connection");
 			}
 		}
 		return has;
@@ -78,10 +82,10 @@ public class Database {
 			ps.setString(5, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not set data for "+ex);
+			log.severe("["+pName+"]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			log.severe("["+pName+"]: Database connector not found for mysql: "+e);
 			return;
 		} finally {
 			try {
@@ -92,7 +96,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection.");
+				log.severe("["+pName+"]: Failed to close connection.");
 			}
 		}
 	}
@@ -111,10 +115,10 @@ public class Database {
 			ps.setString(6, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not set data for "+ex);
+			log.severe("["+pName+"]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			log.severe("["+pName+"]: Database connector not found for mysql: "+e);
 			return;
 		} finally {
 			try {
@@ -125,7 +129,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection.");
+				log.severe("["+pName+"]: Failed to close connection.");
 			}
 		}
 	}
@@ -142,10 +146,10 @@ public class Database {
 			ps.setString(4, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not set data for "+ex);
+			log.severe("["+pName+"]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			log.severe("["+pName+"]: Database connector not found for mysql: "+e);
 			return;
 		} finally {
 			try {
@@ -156,7 +160,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection.");
+				log.severe("["+pName+"]: Failed to close connection.");
 			}
 		}
 	}
@@ -175,10 +179,10 @@ public class Database {
 			ps.setString(6, name);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not set data for "+ex);
+			log.severe("["+pName+"]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for mysql: "+e);
+			log.severe("["+pName+"]: Database connector not found for mysql: "+e);
 			return;
 		} finally {
 			try {
@@ -189,7 +193,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection.");
+				log.severe("["+pName+"]: Failed to close connection.");
 			}
 		}
 	}
@@ -207,10 +211,10 @@ public class Database {
 			ps.setString(4, ip);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe("[Netstats]: Could not set data for "+ex);
+			log.severe("["+pName+"]: Could not set data for "+ex);
 			return;
 		} catch (ClassNotFoundException e) {
-			log.severe("[Netstats]: Database connector not found for "+e);
+			log.severe("["+pName+"]: Database connector not found for "+e);
 			return;
 		} finally {
 			try {
@@ -221,7 +225,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe("[Netstats]: Failed to close connection.");
+				log.severe("["+pName+"]: Failed to close connection.");
 			}
 		}
 	}

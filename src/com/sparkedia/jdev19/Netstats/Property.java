@@ -14,10 +14,12 @@ import java.util.logging.Logger;
 
 public final class Property {
 	private static final Logger log = Logger.getLogger("Minecraft");
+	protected Netstats plugin;
 	private Properties properties;
 	private String fileName;
 
-	public Property(String fileName) {
+	public Property(String fileName, Netstats plugin) {
+		this.plugin = plugin;
 		this.fileName = fileName;
 		this.properties = new Properties();
 		File file = new File(fileName);

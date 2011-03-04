@@ -6,7 +6,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 
 public class NetEntityListener extends EntityListener {
-	public Netstats plugin;
+	protected Netstats plugin;
 	
 	public NetEntityListener(Netstats plugin) {
 		this.plugin = plugin;
@@ -16,7 +16,7 @@ public class NetEntityListener extends EntityListener {
 		Entity entity = event.getEntity();
 		if (entity instanceof Player) {
 			if (Netstats.userProp == null) {
-				Netstats.userProp = new Property("plugins/Netstats/players/"+((Player)entity).getName()+".stats");
+				Netstats.userProp = new Property("plugins/"+plugin.pName+"/players/"+((Player)entity).getName()+".stats", plugin);
 			}
 			int deaths = Netstats.userProp.getInt("deaths");
 			deaths++;
