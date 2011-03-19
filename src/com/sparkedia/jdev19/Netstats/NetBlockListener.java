@@ -1,117 +1,98 @@
 package com.sparkedia.jdev19.Netstats;
 
-import org.bukkit.entity.Player;
+import java.util.HashMap;
+
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public class NetBlockListener extends BlockListener {
 	protected Netstats plugin;
-	private String pName;
-	protected Property config;
+	private HashMap<String, Property> users;
+	private HashMap<String, Integer> actions;
+	private String pFolder;
+	protected HashMap<String, Object> config;
 	protected String host;
 	protected String database;
 	protected String username;
 	protected String password;
 	public int updateRate;
 	protected Database db;
-	public int actions = 0;
-	public int broken = 0;
-	public int placed = 0;
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
-		this.pName = plugin.pName;
-		this.config = Netstats.config;
-		this.host = config.getString("host");
-		this.database = config.getString("database");
-		this.username = config.getString("username");
-		this.password = config.getString("password");
-		this.updateRate = config.getInt("updateRate");
-		this.db = new Database(Database.Type.MYSQL, host, database, username, password, plugin);
+		this.pFolder = plugin.pFolder;
+		this.config = plugin.config;
+		this.actions = plugin.actions;
+		this.updateRate = (Integer)config.get("updateRate");
+		this.db = plugin.db;
 	}
 	
-	public void onBlockBreak(BlockBreakEvent event) {
-		if (Netstats.userProp == null) {
-			//They reloaded the plugins, time to re-set the player property files
-			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
+	public void onBlockBreak(BlockBreakEvent e) {
+		String name = e.getPlayer().getName();
+		if (!users.containsKey(name)) {
+			// They reloaded the plugins, time to re-set the player property files
+			users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
 		}
-		actions++;
-		broken++;
-		if (actions == updateRate) {
-			Player player = event.getPlayer();
-			//update data before store
-			Netstats.userProp.setLong("broken", broken);
-			//save data from propfile and reset it
-			long tbreaks = Netstats.userProp.getLong("broken");
-			long tplaced = Netstats.userProp.getLong("placed");
-			int deaths = Netstats.userProp.getInt("deaths");
+		Property prop = users.get(name);
+		int count = actions.get(name)+1;
+		prop.inc("broken"); // Add 1 to broken
+		if (count == updateRate) {
 			long now = System.currentTimeMillis();
-			long total = Netstats.userProp.getLong("total");
-			long enter = Netstats.userProp.getLong("enter");
-			total = total+(now-enter);
-			db.update(player.getName(), tbreaks, tplaced, now, total, deaths);
-			//reset propfile data back to nothing
-			Netstats.userProp.setLong("broken", 0);
-			Netstats.userProp.setLong("placed", 0);
-			Netstats.userProp.setLong("enter", now);
-			Netstats.userProp.setLong("total", 0);
-			Netstats.userProp.setInt("deaths", 0);
-			//reset watched actions
-			actions = 0;
-			broken = 0;
-			placed = 0;
+			String sql = "UPDATE netstats SET ";
+			sql += "broken="+prop.getInt("broken")+" ";
+			sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+" " : "";
+			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+" " : "";
+			sql += "seen="+prop.getLong("seen")+" ";
+			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")));
+			sql += " WHERE name="+name;
+			db.update(sql);
+			// Reset data data back to nothing except enter and total
+			prop.setInt("broken", 0);
+			prop.setInt("placed", 0);
+			prop.setInt("deaths", 0);
+			prop.setLong("seen", now);
+			// Reset watched actions back to 0 (zero)
+			actions.put(name, 0);
 		} else {
-			//get data from propfile and set new data
-			long enter = Netstats.userProp.getLong("enter");
-			long total = Netstats.userProp.getLong("total");
+			// Update timestamp
 			long now = System.currentTimeMillis();
-			total = total+(now-enter);
-			Netstats.userProp.setLong("total", total);
-			Netstats.userProp.setLong("enter", now);
-			Netstats.userProp.setLong("broken", broken);
+			prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+			prop.setLong("seen", now);
 		}
 	}
 	
-	public void onBlockPlace(BlockPlaceEvent event) {
-		if (Netstats.userProp == null) {
-			//Plugins reset, make sure to re-set the property files
-			Netstats.userProp = new Property("plugins/"+pName+"/players/"+event.getPlayer().getName()+".stats", plugin);
+	public void onBlockPlace(BlockPlaceEvent e) {
+		String name = e.getPlayer().getName();
+		if (!users.containsKey(name)) {
+			// Plugin is reset, make sure to re-set the property files
+			users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
 		}
-		actions++;
-		placed++;
-		if (actions == updateRate) {
-			Player player = event.getPlayer();
-			//update before store
-			Netstats.userProp.setLong("placed", placed);
-			//save data from propfile and reset it
-			long tbreaks = Netstats.userProp.getLong("broken");
-			long tplaced = Netstats.userProp.getLong("placed");
-			int deaths = Netstats.userProp.getInt("deaths");
+		Property prop = users.get(name);
+		int count = actions.get(name)+1;
+		prop.inc("placed");
+		if (count == updateRate) {
 			long now = System.currentTimeMillis();
-			long total = Netstats.userProp.getLong("total");
-			long enter = Netstats.userProp.getLong("enter");
-			total = total+(now-enter);
-			db.update(player.getName(), tbreaks, tplaced, now, total, deaths);
-			//reset propfile data back to nothing
-			Netstats.userProp.setLong("broken", 0);
-			Netstats.userProp.setLong("placed", 0);
-			Netstats.userProp.setLong("enter", now);
-			Netstats.userProp.setLong("total", 0);
-			Netstats.userProp.setInt("deaths", 0);
-			//reset watched data
-			actions = 0;
-			broken = 0;
-			placed = 0;
+			String sql = "UPDATE netstats SET ";
+			sql += "placed="+prop.getInt("placed")+" ";
+			sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+" " : "";
+			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+" " : "";
+			sql += "seen="+prop.getLong("seen")+" ";
+			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")));
+			sql += " WHERE name="+name;
+			db.update(sql);
+			// Reset data data back to nothing except enter and total
+			prop.setInt("broken", 0);
+			prop.setInt("placed", 0);
+			prop.setInt("deaths", 0);
+			prop.setLong("seen", now);
+			// Reset watched actions back to 0 (zero)
+			actions.put(name, 0);
 		} else {
-			//get data from propfile and set new data
-			long enter = Netstats.userProp.getLong("enter");
-			long total = Netstats.userProp.getLong("total");
+			// Update timestamp
 			long now = System.currentTimeMillis();
-			total = total+(now-enter);
-			Netstats.userProp.setLong("total", total);
-			Netstats.userProp.setLong("enter", now);
-			Netstats.userProp.setLong("placed", placed);
+			prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+			prop.setLong("seen", now);
 		}
 	}
 }

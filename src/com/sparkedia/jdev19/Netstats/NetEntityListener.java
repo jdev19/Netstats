@@ -12,15 +12,14 @@ public class NetEntityListener extends EntityListener {
 		this.plugin = plugin;
 	}
 	
-	public void onEntityDeath(EntityDeathEvent event) {
-		Entity entity = event.getEntity();
+	public void onEntityDeath(EntityDeathEvent e) {
+		Entity entity = e.getEntity();
 		if (entity instanceof Player) {
-			if (Netstats.userProp == null) {
-				Netstats.userProp = new Property("plugins/"+plugin.pName+"/players/"+((Player)entity).getName()+".stats", plugin);
+			String name = ((Player)entity).getName();
+			if (!plugin.users.containsKey(name)) {
+				plugin.users.put(name, new Property(plugin.pFolder+"/players/"+name+".stats", plugin));
 			}
-			int deaths = Netstats.userProp.getInt("deaths");
-			deaths++;
-			Netstats.userProp.setInt("deaths", deaths);
+			plugin.users.get(name).inc("deaths");
 		}
 	}
 }
