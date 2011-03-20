@@ -39,12 +39,12 @@ while ($row = mysql_fetch_array($res)) {
     $login = $row['enter'];
     $seen = $row['seen'];
     $total = $row['total'];
-    $logged = ($row['logged'] == 1) ? true: false;
+    $logged = ($row['logged'] == 1) ? true : false;
     $ip = $row['IP'];
     $broken = $row['broken'];
     $placed = $row['placed'];
     $deaths = $row['deaths'];
-    
+
 	// Total playtime
 	$total = $total/1000;
 	$sec = $total%60;
@@ -73,29 +73,29 @@ while ($row = mysql_fetch_array($res)) {
 	$atime .= ($amin) ? $amin." mins " : '';
 	$atime .= ($asec) ? $asec." secs " : '';
 	$atime .= " ago";
-	$atime = $logged ? "Currently Online" : $atime;
-	
+	$atime = ($logged) ? "Currently Online" : $atime;
+
 	// Generate the rest of the table
-    echo "<tr>";
-    if ($logged == 1) {
-    echo "<td style = 'color:green'>" . $name . "</td>";
+    echo '<tr>';
+    if ($logged) {
+    echo '<td style="color: green">'.$name.'</td>';
     } else {
-    echo "<td style = 'color:red'>" . $name . "</td>";
+    echo '<td style="color: red">'.$name.'</td>';
     }
     if ($trackBroken) {
-        echo "<td>" . $broken . "</td>";
+        echo '<td>'.$broken.'</td>';
     }
     if ($trackPlaced) {
-        echo "<td>" . $placed . "</td>";
+        echo '<td>'.$placed.'</td>';
     }
     if ($trackDeaths) {
-        echo "<td>" . $deaths . "</td>";
+        echo '<td>'.$deaths.'</td>';
     }
-    echo "<td>" . $inDate . "</td>";
-    echo "<td>" . $atime . "</td>";
-    echo "<td>" . $time . "</td>";
+    echo '<td>'.$login.'</td>';
+    echo '<td>'.$atime.'</td>';
+    echo '<td>'.$time.'</td>';
     if ($trackIP) {
-        echo "<td>".$ip."</td>";\
+        echo '<td>'.$ip.'</td>';
     }
-    echo "</tr>";
+    echo '</tr>';
 ?>
