@@ -29,7 +29,7 @@ public class Netstats extends JavaPlugin {
 	}
 	
 	public void onEnable() {
-		pFolder = this.getDataFolder().toString();
+		pFolder = this.getDataFolder().toString().replace("\\", "/");
 		// Log that the plugin has been enabled
 		PluginDescriptionFile pdf = this.getDescription();
 		pName = pdf.getName();
