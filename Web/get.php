@@ -40,7 +40,7 @@ while ($row = mysql_fetch_array($res)) {
     $seen = $row['seen'];
     $total = $row['total'];
     $logged = ($row['logged'] == 1) ? true : false;
-    $ip = $row['IP'];
+    $ip = $row['ip'];
     $broken = $row['broken'];
     $placed = $row['placed'];
     $deaths = $row['deaths'];
