@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------
-File Created by Josh Devecka(Jdev19)
+File Created by Josh Devecka(Jdev19/amd3th)
 You may use the code as you wish,
 but please give me some credit.
 -------------------------------------------------*/
@@ -39,8 +39,8 @@ while ($row = mysql_fetch_array($res)) {
     $login = $row['enter'];
     $seen = $row['seen'];
     $total = $row['total'];
-    $status = $row['logged'];
-    $ip = $row['ip'];
+    $logged = $row['logged'];
+    $ip = $row['IP'];
     $broken = $row['broken'];
     $placed = $row['placed'];
     $deaths = $row['deaths'];
@@ -60,7 +60,7 @@ while ($row = mysql_fetch_array($res)) {
 	$time .= $sec." secs";
 
 	// Time they've been gone
-	$ago = ((time()*1000)-$playerData['seen'])/1000;
+	$ago = ((time()*1000)-$seen)/1000;
 	$asec = $ago%60;
 	$ago = $ago/60;
 	$amin = $ago%60;
@@ -76,5 +76,26 @@ while ($row = mysql_fetch_array($res)) {
 	$atime = ($playerData['online']) ? "Currently Online" : $atime;
 	
 	// Generate the rest of the table
-}
+    echo "<tr>";
+    if ($logged == 1) {
+    echo "<td style = 'color:green'>" . $name . "</td>";
+    } else {
+    echo "<td style = 'color:red'>" . $name . "</td>";
+    }
+    if ($trackBroken) {
+        echo "<td>" . $broken . "</td>";
+    }
+    if ($trackPlaced) {
+        echo "<td>" . $placed . "</td>";
+    }
+    if ($trackDeaths) {
+        echo "<td>" . $deaths . "</td>";
+    }
+    echo "<td>" . $inDate . "</td>";
+    echo "<td>" . $atime . "</td>";
+    echo "<td>" . $time . "</td>";
+    if ($trackIP) {
+        echo "<td>".$ip."</td>";\
+    }
+    echo "</tr>";
 ?>
