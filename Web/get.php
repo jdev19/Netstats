@@ -39,7 +39,7 @@ while ($row = mysql_fetch_array($res)) {
     $login = $row['enter'];
     $seen = $row['seen'];
     $total = $row['total'];
-    $logged = $row['logged'];
+    $logged = ($row['logged'] == 1) ? true: false;
     $ip = $row['IP'];
     $broken = $row['broken'];
     $placed = $row['placed'];
@@ -73,7 +73,7 @@ while ($row = mysql_fetch_array($res)) {
 	$atime .= ($amin) ? $amin." mins " : '';
 	$atime .= ($asec) ? $asec." secs " : '';
 	$atime .= " ago";
-	$atime = ($playerData['online']) ? "Currently Online" : $atime;
+	$atime = $logged ? "Currently Online" : $atime;
 	
 	// Generate the rest of the table
     echo "<tr>";
