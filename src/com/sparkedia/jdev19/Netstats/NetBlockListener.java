@@ -1,6 +1,7 @@
 package com.sparkedia.jdev19.Netstats;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
@@ -11,17 +12,17 @@ public class NetBlockListener extends BlockListener {
 	private HashMap<String, Property> users;
 	private HashMap<String, Integer> actions;
 	private String pFolder;
-	protected HashMap<String, Object> config;
+	protected LinkedHashMap<String, Object> config;
 	protected String host;
 	protected String database;
 	protected String username;
 	protected String password;
-	public int updateRate;
 	protected Database db;
+	public int updateRate;
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
-		this.pFolder = plugin.pFolder;
+		this.pFolder = plugin.pFolder+"/players/";
 		this.config = plugin.config;
 		this.actions = plugin.actions;
 		this.updateRate = (Integer)config.get("updateRate");
@@ -32,7 +33,7 @@ public class NetBlockListener extends BlockListener {
 		String name = e.getPlayer().getName();
 		if (!users.containsKey(name)) {
 			// They reloaded the plugins, time to re-set the player property files
-			users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
+			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		Property prop = users.get(name);
 		int count = actions.get(name)+1;
@@ -66,7 +67,7 @@ public class NetBlockListener extends BlockListener {
 		String name = e.getPlayer().getName();
 		if (!users.containsKey(name)) {
 			// Plugin is reset, make sure to re-set the property files
-			users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
+			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		Property prop = users.get(name);
 		int count = actions.get(name)+1;
