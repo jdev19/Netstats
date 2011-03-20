@@ -1,4 +1,4 @@
-package com.sparkedia.jdev19.Netstats;
+package com.sparkedia.valrix.Netstats;
 
 import java.util.logging.Logger;
 

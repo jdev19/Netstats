@@ -1,4 +1,4 @@
-package com.sparkedia.jdev19.Netstats;
+package com.sparkedia.valrix.Netstats;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
