@@ -32,6 +32,7 @@ public class NetPlayerListener extends PlayerListener {
 		// Use previous format of storing a user and their propfile to users
 		if (!(new File(pFolder+name+".stats")).exists()) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
+			plugin.actions.put(name, 0);
 			prop = users.get(name);
 			prop.setLong("enter", 0);
 			prop.setLong("seen", 0);
@@ -41,6 +42,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setInt("deaths", 0);
 		} else {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
+			plugin.actions.put(name, 0);
 			prop = users.get(name);
 		}
 		// There's already some user data, let's save it and refresh their join data
@@ -50,12 +52,12 @@ public class NetPlayerListener extends PlayerListener {
 			int port = IP.getPort();
 			String ip = IP.toString().replace("/", "").replace(":"+port, "");
 			sql = "UPDATE netstats SET ";
-			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+" " : "";
-			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+" " : "";
-			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+" " : "";
-			sql += "enter="+now+" seen="+now+" status=1 ";
-			sql += ((Boolean)config.get("trackIP")) ? "ip="+ip+" " : "";
-			sql += "total="+prop.getLong("total")+" WHERE name="+name;
+			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
+			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
+			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
+			sql += "enter="+now+", seen="+now+", ";
+			sql += ((Boolean)config.get("trackIP")) ? "ip="+ip+", " : "";
+			sql += "total="+prop.getLong("total")+", logged=1 WHERE player='"+name+"';";
 			db.update(sql);
 			prop.setInt("broken", 0);
 			prop.setInt("placed", 0);
@@ -72,9 +74,9 @@ public class NetPlayerListener extends PlayerListener {
 			// Player has been on the server before, else register them to database
 			if (db.hasData(name)) {
 				// UPDATE enter, seen, status, and ip
-				sql = "UPDATE netstats SET enter="+now+" seen="+now+" status=1 ";
-				sql += ((Boolean)config.get("trackIP")) ? "ip="+ip+" " : "";
-				sql += "WHERE name="+name;
+				sql = "UPDATE netstats SET enter="+now+", seen="+now;
+				sql += ((Boolean)config.get("trackIP")) ? ", ip="+ip : "";
+				sql += ", logged=1 WHERE player='"+name+"';";
 				db.update(sql);
 				prop.setLong("enter", now);
 				prop.setLong("seen", now);
@@ -97,15 +99,16 @@ public class NetPlayerListener extends PlayerListener {
 		}
 		// Store all data to database
 		sql = "UPDATE netstats SET ";
-		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+" " : "";
-		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+" " : "";
-		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+" " : "";
-		sql += "total="+prop.getLong("total")+" status=0 WHERE name="+name;
+		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
+		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
+		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
 		prop.setInt("deaths", 0);
 		users.remove(name);
+		plugin.actions.remove(name);
 	}
 	
 	public void onPlayerKick(PlayerEvent e) {
@@ -119,14 +122,15 @@ public class NetPlayerListener extends PlayerListener {
 		}
 		// Store all data to database
 		sql = "UPDATE netstats SET ";
-		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+" " : "";
-		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+" " : "";
-		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+" " : "";
-		sql += "total="+prop.getLong("total")+" status=0 WHERE name="+name;
+		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
+		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
+		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
 		prop.setInt("deaths", 0);
 		users.remove(name);
+		plugin.actions.remove(name);
 	}
 }

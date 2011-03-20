@@ -12,7 +12,7 @@ date_default_timezone_set(date_default_timezone_get());
 mysql_connect($mysql_host,$mysql_user,$mysql_pass) or die (mysql_error());
 mysql_select_db($mysql_db) or die (mysql_error());
 
-$res = mysql_query("SELECT * from $mysql_table ORDER BY `status` DESC, `name` ASC");
+$res = mysql_query("SELECT * from $mysql_table ORDER BY `logged` DESC, `player` ASC");
 
 // Create table
 echo '<table border="1">';
@@ -35,11 +35,11 @@ if ($trackIP) {
 echo '</tr>';
 
 while ($row = mysql_fetch_array($res)) {
-    $name = $row['name'];
+    $name = $row['player'];
     $login = $row['enter'];
     $seen = $row['seen'];
     $total = $row['total'];
-    $status = $row['status'];
+    $status = $row['logged'];
     $ip = $row['ip'];
     $broken = $row['broken'];
     $placed = $row['placed'];

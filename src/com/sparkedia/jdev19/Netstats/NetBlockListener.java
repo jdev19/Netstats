@@ -24,6 +24,7 @@ public class NetBlockListener extends BlockListener {
 		this.plugin = plugin;
 		this.pFolder = plugin.pFolder+"/players/";
 		this.config = plugin.config;
+		this.users = plugin.users;
 		this.actions = plugin.actions;
 		this.updateRate = (Integer)config.get("updateRate");
 		this.db = plugin.db;
@@ -41,12 +42,11 @@ public class NetBlockListener extends BlockListener {
 		if (count == updateRate) {
 			long now = System.currentTimeMillis();
 			String sql = "UPDATE netstats SET ";
-			sql += "broken="+prop.getInt("broken")+" ";
-			sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+" " : "";
-			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+" " : "";
-			sql += "seen="+prop.getLong("seen")+" ";
-			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")));
-			sql += " WHERE name="+name;
+			sql += "broken="+prop.getInt("broken")+", ";
+			sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+", " : "";
+			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+			sql += "seen="+prop.getLong("seen")+", ";
+			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 			db.update(sql);
 			// Reset data data back to nothing except enter and total
 			prop.setInt("broken", 0);
@@ -75,12 +75,11 @@ public class NetBlockListener extends BlockListener {
 		if (count == updateRate) {
 			long now = System.currentTimeMillis();
 			String sql = "UPDATE netstats SET ";
-			sql += "placed="+prop.getInt("placed")+" ";
-			sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+" " : "";
-			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+" " : "";
-			sql += "seen="+prop.getLong("seen")+" ";
-			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")));
-			sql += " WHERE name="+name;
+			sql += "placed="+prop.getInt("placed")+", ";
+			sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+", " : "";
+			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+			sql += "seen="+prop.getLong("seen")+", ";
+			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 			db.update(sql);
 			// Reset data data back to nothing except enter and total
 			prop.setInt("broken", 0);

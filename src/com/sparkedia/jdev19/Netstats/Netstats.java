@@ -16,11 +16,12 @@ public class Netstats extends JavaPlugin {
 	private NetEntityListener entityListener;
 	public Logger log = Logger.getLogger("Minecraft");
 	public LinkedHashMap<String, Object> config;
-	public HashMap<String, Property> users; // <Name, Propfile>
-	public HashMap<String, Integer> actions;
+	public HashMap<String, Property> users  = new HashMap<String, Property>();; // <Name, Propfile>
+	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
 	public String pName;
 	public String pFolder;
 	public Database db;
+	private Boolean disabled = false;
 	
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
@@ -53,7 +54,7 @@ public class Netstats extends JavaPlugin {
 			conf.setBoolean("trackPlaced", true);
 			conf.setBoolean("trackDeaths", true);
 			log.severe("["+pName+"] Your config isn't set up. Creating one and disabling "+pName+".");
-			this.getPluginLoader().disablePlugin(this);
+			disabled = true;
 		} else {
 			config = new LinkedHashMap<String, Object>();
 			Property conf = new Property(pFolder+"/config.txt", this);
@@ -69,23 +70,23 @@ public class Netstats extends JavaPlugin {
 			config.put("trackDeaths", conf.getBoolean("trackDeaths"));
 			db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), this);
 		}
-		if (this.isEnabled()) {
+		if (!disabled) {
 			PluginManager pm = getServer().getPluginManager();
 
 			// Register player events
 			playerListener = new NetPlayerListener(this);
-			pm.registerEvent(Event.Type.PLAYER_JOIN, this.playerListener, Event.Priority.Normal, this);
-			pm.registerEvent(Event.Type.PLAYER_QUIT, this.playerListener, Event.Priority.Normal, this);
-			pm.registerEvent(Event.Type.PLAYER_KICK, this.playerListener, Event.Priority.Normal, this);
+			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Normal, this);
+			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Normal, this);
+			pm.registerEvent(Event.Type.PLAYER_KICK, playerListener, Event.Priority.Normal, this);
 
 			// Register block events
 			if ((Boolean)config.get("trackBroken") || (Boolean)config.get("trackPlaced")) {
 				blockListener = new NetBlockListener(this);
 				if ((Boolean)config.get("trackBroken")) {
-					pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Normal, this);
 				}
 				if ((Boolean)config.get("trackPlaced")) {
-					pm.registerEvent(Event.Type.BLOCK_PLACED, this.blockListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.BLOCK_PLACED, blockListener, Event.Priority.Normal, this);
 				}
 			}
 
@@ -99,6 +100,8 @@ public class Netstats extends JavaPlugin {
 				int rate = ((Integer)config.get("updateRate")*20);
 				this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new NetRepeater(this), rate, rate);
 			}
+		} else {
+			this.getPluginLoader().disablePlugin(this);
 		}
 	}
 }

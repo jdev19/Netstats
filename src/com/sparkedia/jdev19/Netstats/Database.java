@@ -41,7 +41,7 @@ public class Database {
 		ResultSet rs = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("SELECT total FROM netstats WHERE name = ? LIMIT 1");
+			ps = con.prepareStatement("SELECT total FROM netstats WHERE player = ? LIMIT 1");
 			ps.setString(1, name);
 			rs = ps.executeQuery();
 			has = rs.next();
@@ -75,7 +75,6 @@ public class Database {
 		PreparedStatement ps = null;
 		try {
 			con = connection();
-			// UPDATE netstats SET broken = broken+?, placed = placed+?, total = total+?, deaths = deaths+? WHERE name = ?
 			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -104,7 +103,7 @@ public class Database {
 		PreparedStatement ps = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("INSERT INTO netstats (id, name, enter, seen, total, status, ip, broken, placed, deaths) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0)");
+			ps = con.prepareStatement("INSERT INTO netstats (id, player, enter, seen, total, logged, ip, broken, placed, deaths) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0)");
 			ps.setString(1, name);
 			ps.setLong(2, time);
 			ps.setLong(3, time);

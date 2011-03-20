@@ -37,10 +37,10 @@ public class NetRepeater implements Runnable {
 				prop.setLong("seen", now);
 				// Update database
 				sql = "UPDATE netstats SET ";
-				sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+" " : "";
-				sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+" " : "";
-				sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+" " : "";
-				sql += "seen="+prop.getLong("seen")+" total="+prop.getLong("total")+" WHERE name="+name;
+				sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
+				sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
+				sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
+				sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 				db.update(sql);
 				actions.put(name, 0);
 				// Reset everything (not time based) in property file since we just updated the DB

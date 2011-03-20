@@ -51,8 +51,10 @@ public final class Property {
 			}
 		} catch (FileNotFoundException ex) {
 			log.log(Level.SEVERE, "["+pName+"]: Couldn't find file "+fileName, ex);
+			return;
 		} catch (IOException ex) {
 			log.log(Level.SEVERE, "["+pName+"]: Unable to save "+fileName, ex);
+			return;
 		} finally {
 			// Close the reader
 			try {
@@ -87,8 +89,10 @@ public final class Property {
 			}
 		} catch (FileNotFoundException ex) {
 			log.log(Level.SEVERE, "["+pName+"]: Couldn't find file "+fileName, ex);
+			return;
 		} catch (IOException ex) {
 			log.log(Level.SEVERE, "["+pName+"]: Unable to save "+fileName, ex);
+			return;
 		} finally {
 			//Close the BufferedWriter
 			try {
@@ -107,7 +111,7 @@ public final class Property {
 	}
 	
 	public void inc(String key) {
-		this.properties.put(key, (Integer)this.properties.get(key)+1);
+		this.properties.put(key, String.valueOf(Integer.parseInt((String)this.properties.get(key))+1));
 	}
 	
 	// STRING
