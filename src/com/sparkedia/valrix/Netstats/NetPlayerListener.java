@@ -48,9 +48,7 @@ public class NetPlayerListener extends PlayerListener {
 		// There's already some user data, let's save it and refresh their join data
 		if (prop.getInt("broken") != 0 || prop.getInt("placed") != 0 || prop.getInt("deaths") != 0) {
 			long now = System.currentTimeMillis();
-			InetSocketAddress IP = player.getAddress();
-			int port = IP.getPort();
-			String ip = IP.toString().replace("/", "").replace(":"+port, "");
+			String ip = player.getAddress().getAddress().getHostAddress().replace("/", "");
 			sql = "UPDATE netstats SET ";
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
