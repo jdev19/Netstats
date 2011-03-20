@@ -40,7 +40,7 @@ while ($row = mysql_fetch_array($res)) {
     $seen = $row['seen'];
     $total = $row['total'];
     $logged = ($row['logged'] == 1) ? true : false;
-    $ip = $row['IP'];
+    $ip = $row['ip'];
     $broken = $row['broken'];
     $placed = $row['placed'];
     $deaths = $row['deaths'];
@@ -91,11 +91,13 @@ while ($row = mysql_fetch_array($res)) {
     if ($trackDeaths) {
         echo '<td>'.$deaths.'</td>';
     }
-    echo '<td>'.$login.'</td>';
+    echo '<td>'.date("D, M d g:i A", $login/1000).'</td>';
     echo '<td>'.$atime.'</td>';
     echo '<td>'.$time.'</td>';
     if ($trackIP) {
         echo '<td>'.$ip.'</td>';
     }
     echo '</tr>';
+}
+echo '</table>';
 ?>
