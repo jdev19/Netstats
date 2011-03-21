@@ -28,7 +28,7 @@ public class NetPlayerListener extends PlayerListener {
 		Player player = e.getPlayer();
 		String name = player.getName();
 		Property prop;
-		String sql;
+		String sql = "";
 		// Use previous format of storing a user and their propfile to users
 		if (!(new File(pFolder+name+".stats")).exists()) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
@@ -40,6 +40,9 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setInt("broken", 0);
 			prop.setInt("placed", 0);
 			prop.setInt("deaths", 0);
+			prop.setInt("mobsKilled", 0);
+			prop.setInt("playersKilled", 0);
+			prop.save();
 		} else {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
 			plugin.actions.put(name, 0);
@@ -51,10 +54,11 @@ public class NetPlayerListener extends PlayerListener {
 			InetSocketAddress IP = player.getAddress();
 			int port = IP.getPort();
 			String ip = IP.toString().replace("/", "").replace(":"+port, "");
-			sql = "UPDATE netstats SET ";
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
+			sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
+			sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 			sql += "enter="+now+", seen="+now+", ";
 			sql += ((Boolean)config.get("trackIP")) ? "ip='"+ip+"', " : "";
 			sql += "total="+prop.getLong("total")+", logged=1 WHERE player='"+name+"';";
@@ -62,8 +66,11 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setInt("broken", 0);
 			prop.setInt("placed", 0);
 			prop.setInt("deaths", 0);
+			prop.setInt("mobsKilled", 0);
+			prop.setInt("playersKilled", 0);
 			prop.setLong("enter", now);
 			prop.setLong("seen", now);
+			prop.save();
 		} else {
 			// No previous data (good!), do everything like normal
 			InetSocketAddress IP = player.getAddress();
@@ -74,16 +81,18 @@ public class NetPlayerListener extends PlayerListener {
 			// Player has been on the server before, else register them to database
 			if (db.hasData(name)) {
 				// UPDATE enter, seen, status, and ip
-				sql = "UPDATE netstats SET enter="+now+", seen="+now;
+				sql += "enter="+now+", seen="+now;
 				sql += ((Boolean)config.get("trackIP")) ? ", ip='"+ip+"'" : "";
 				sql += ", logged=1 WHERE player='"+name+"';";
 				db.update(sql);
 				prop.setLong("enter", now);
 				prop.setLong("seen", now);
+				prop.save();
 			} else {
 				db.register(name, now, ip);
 				prop.setLong("enter", now);
 				prop.setLong("seen", now);
+				prop.save();
 			}
 		}
 	}
@@ -93,20 +102,25 @@ public class NetPlayerListener extends PlayerListener {
 		String name = e.getPlayer().getName();
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-		String sql;
+		prop.save();
+		String sql = "";
 		if (users.containsKey(name)) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		// Store all data to database
-		sql = "UPDATE netstats SET ";
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player=\'"+name+"\';";
+		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
+		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
 		prop.setInt("deaths", 0);
+		prop.setInt("mobsKilled", 0);
+		prop.setInt("playersKilled", 0);
+		prop.save();
 		users.remove(name);
 		plugin.actions.remove(name);
 	}
@@ -116,20 +130,24 @@ public class NetPlayerListener extends PlayerListener {
 		String name = e.getPlayer().getName();
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-		String sql;
+		String sql = "";
 		if (users.containsKey(name)) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		// Store all data to database
-		sql = "UPDATE netstats SET ";
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player=\'"+name+"\';";
+		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
+		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
 		prop.setInt("deaths", 0);
+		prop.setInt("mobsKilled", 0);
+		prop.setInt("playersKilled", 0);
+		prop.save();
 		users.remove(name);
 		plugin.actions.remove(name);
 	}

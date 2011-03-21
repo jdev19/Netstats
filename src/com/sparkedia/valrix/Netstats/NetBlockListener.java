@@ -18,7 +18,7 @@ public class NetBlockListener extends BlockListener {
 	protected String username;
 	protected String password;
 	protected Database db;
-	public int updateRate;
+	private int updateRate;
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
@@ -29,70 +29,80 @@ public class NetBlockListener extends BlockListener {
 		this.updateRate = (Integer)config.get("updateRate");
 		this.db = plugin.db;
 	}
-	
+
 	public void onBlockBreak(BlockBreakEvent e) {
-		String name = e.getPlayer().getName();
-		if (!users.containsKey(name)) {
-			// They reloaded the plugins, time to re-set the player property files
-			users.put(name, new Property(pFolder+name+".stats", plugin));
-		}
-		Property prop = users.get(name);
-		int count = actions.get(name)+1;
-		prop.inc("broken"); // Add 1 to broken
-		if (count == updateRate) {
-			long now = System.currentTimeMillis();
-			String sql = "UPDATE netstats SET ";
-			sql += "broken="+prop.getInt("broken")+", ";
-			sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+", " : "";
-			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
-			sql += "seen="+prop.getLong("seen")+", ";
-			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
-			db.update(sql);
-			// Reset data data back to nothing except enter and total
-			prop.setInt("broken", 0);
-			prop.setInt("placed", 0);
-			prop.setInt("deaths", 0);
-			prop.setLong("seen", now);
-			// Reset watched actions back to 0 (zero)
-			actions.put(name, 0);
-		} else {
-			// Update timestamp
-			long now = System.currentTimeMillis();
-			prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-			prop.setLong("seen", now);
+		// If the event wasn't canceled by another plugin
+		if (!e.isCancelled()) {
+			String name = e.getPlayer().getName();
+			if (!users.containsKey(name)) {
+				// They reloaded the plugins, time to re-set the player property files
+				users.put(name, new Property(pFolder+name+".stats", plugin));
+			}
+			Property prop = users.get(name);
+			int count = actions.get(name)+1;
+			prop.inc("broken"); // Add 1 to broken
+			if (count == updateRate) {
+				long now = System.currentTimeMillis();
+				String sql = "";
+				sql += "broken="+prop.getInt("broken")+", ";
+				sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+", " : "";
+				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += "seen="+prop.getLong("seen")+", ";
+				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				db.update(sql);
+				// Reset data data back to nothing except enter and total
+				prop.setInt("broken", 0);
+				prop.setInt("placed", 0);
+				prop.setInt("deaths", 0);
+				prop.setLong("seen", now);
+				prop.save();
+				// Reset watched actions back to 0 (zero)
+				actions.put(name, 0);
+			} else {
+				// Update timestamp
+				long now = System.currentTimeMillis();
+				prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+				prop.setLong("seen", now);
+				prop.save();
+			}
 		}
 	}
 	
 	public void onBlockPlace(BlockPlaceEvent e) {
-		String name = e.getPlayer().getName();
-		if (!users.containsKey(name)) {
-			// Plugin is reset, make sure to re-set the property files
-			users.put(name, new Property(pFolder+name+".stats", plugin));
-		}
-		Property prop = users.get(name);
-		int count = actions.get(name)+1;
-		prop.inc("placed");
-		if (count == updateRate) {
-			long now = System.currentTimeMillis();
-			String sql = "UPDATE netstats SET ";
-			sql += "placed="+prop.getInt("placed")+", ";
-			sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+", " : "";
-			sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
-			sql += "seen="+prop.getLong("seen")+", ";
-			sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
-			db.update(sql);
-			// Reset data data back to nothing except enter and total
-			prop.setInt("broken", 0);
-			prop.setInt("placed", 0);
-			prop.setInt("deaths", 0);
-			prop.setLong("seen", now);
-			// Reset watched actions back to 0 (zero)
-			actions.put(name, 0);
-		} else {
-			// Update timestamp
-			long now = System.currentTimeMillis();
-			prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-			prop.setLong("seen", now);
+		// If the event wasn't canceled by another plugin
+		if (!e.isCancelled()) {
+			String name = e.getPlayer().getName();
+			if (!users.containsKey(name)) {
+				// Plugin is reset, make sure to re-set the property files
+				users.put(name, new Property(pFolder+name+".stats", plugin));
+			}
+			Property prop = users.get(name);
+			int count = actions.get(name)+1;
+			prop.inc("placed");
+			if (count == updateRate) {
+				long now = System.currentTimeMillis();
+				String sql = "";
+				sql += "placed="+prop.getInt("placed")+", ";
+				sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+", " : "";
+				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += "seen="+prop.getLong("seen")+", ";
+				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				db.update(sql);
+				// Reset data data back to nothing except enter and total
+				prop.setInt("broken", 0);
+				prop.setInt("placed", 0);
+				prop.setInt("deaths", 0);
+				prop.setLong("seen", now);
+				prop.save();
+				// Reset watched actions back to 0 (zero)
+				actions.put(name, 0);
+			} else {
+				// Update timestamp
+				long now = System.currentTimeMillis();
+				prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+				prop.setLong("seen", now);
+				prop.save();
+			}
 		}
 	}
 }

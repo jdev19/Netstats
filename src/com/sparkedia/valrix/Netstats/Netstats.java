@@ -21,11 +21,16 @@ public class Netstats extends JavaPlugin {
 	public String pName;
 	public String pFolder;
 	public Database db;
+	private NetRepeater runner;
 	private Boolean disabled = false;
 	
 	public void onDisable() {
+		if (!users.isEmpty()) {
+			// There are still users logged in! Quick, save their data first!
+			runner.out();
+		}
 		PluginDescriptionFile pdf = this.getDescription();
-		log.info("["+pName+"] v"+pdf.getVersion()+" has been disabled.");
+		log.info('['+pName+"] v"+pdf.getVersion()+" has been disabled.");
 	}
 	
 	public void onEnable() {
@@ -33,7 +38,7 @@ public class Netstats extends JavaPlugin {
 		// Log that the plugin has been enabled
 		PluginDescriptionFile pdf = this.getDescription();
 		pName = pdf.getName();
-		log.info("["+pName+"] v"+pdf.getVersion()+" has been enabled.");
+		log.info('['+pName+"] v"+pdf.getVersion()+" has been enabled.");
 		
 		// Check if players folder exists or create it
 		if (!(new File(pFolder+"/players").isDirectory())) {
@@ -46,31 +51,68 @@ public class Netstats extends JavaPlugin {
 			conf.setString("database", "");
 			conf.setString("username", "");
 			conf.setString("password", "");
+			conf.setString("oldTable", "");
+			conf.setString("newTable", ""); // Only one that truly matters, oldTable is reference
 			conf.setInt("actions", 32);
 			conf.setInt("updateRate", 90); // Time in seconds
 			// Now set option tracking options
+			conf.setString("com0", "Optional things to track. True = track, False = don't track");
 			conf.setBoolean("trackIP", true);
 			conf.setBoolean("trackBroken", true);
 			conf.setBoolean("trackPlaced", true);
 			conf.setBoolean("trackDeaths", true);
-			log.severe("["+pName+"] Your config isn't set up. Creating one and disabling "+pName+".");
+			conf.setBoolean("trackMonsterKills", true);
+			conf.setBoolean("trackPlayerKills", true);
+			conf.save();
+			log.severe('['+pName+"] Your config isn't set up. Creating one and disabling "+pName+'.');
 			disabled = true;
 		} else {
-			config = new LinkedHashMap<String, Object>();
+			// File exists, check if the database info is there
 			Property conf = new Property(pFolder+"/config.txt", this);
-			config.put("host", conf.getString("host"));
-			config.put("database", conf.getString("database"));
-			config.put("username", conf.getString("username"));
-			config.put("password", conf.getString("password"));
-			config.put("actions", conf.getInt("actions"));
-			config.put("updateRate", conf.getInt("updateRate"));
-			config.put("trackIP", conf.getBoolean("trackIP"));
-			config.put("trackBroken", conf.getBoolean("trackBroken"));
-			config.put("trackPlaced", conf.getBoolean("trackPlaced"));
-			config.put("trackDeaths", conf.getBoolean("trackDeaths"));
-			db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), this);
+			if (conf.isEmpty("host") || conf.isEmpty("database") || conf.isEmpty("username") || conf.isEmpty("password")) {
+				log.severe('['+pName+"] Your database settings aren't set. Disabling "+pName+'.');
+				disabled = true;
+			} else {
+				// Database info exists, build a temporary config in the newest format
+				LinkedHashMap<String, Object> tmp = new LinkedHashMap<String, Object>();
+				tmp.put("host", conf.getString("host"));
+				tmp.put("database", conf.getString("database"));
+				tmp.put("username", conf.getString("username"));
+				tmp.put("password", conf.getString("password"));
+				tmp.put("oldTable", conf.getString("oldTable"));
+				tmp.put("newTable", conf.getString("newTable"));
+				tmp.put("actions", conf.getInt("actions"));
+				tmp.put("updateRate", conf.getInt("updateRate"));
+				tmp.put("com0", "Optional things to track. True = track, False = don't track");
+				tmp.put("trackIP", conf.getBoolean("trackIP"));
+				tmp.put("trackBroken", conf.getBoolean("trackBroken"));
+				tmp.put("trackPlaced", conf.getBoolean("trackPlaced"));
+				tmp.put("trackDeaths", conf.getBoolean("trackDeaths"));
+				tmp.put("trackMonsterKills", conf.getBoolean("trackMonsterKills"));
+				tmp.put("trackPlayerKills", conf.getBoolean("trackPlayerKills"));
+				// Check if old config matches new config format
+				if (!conf.match(tmp)) {
+					// They don't match, rebuild config
+					conf.rebuild(tmp);
+				}
+				// Now config = tmp since it'll always be up-to-date
+				config = tmp;
+				// If newTable isn't empty
+				if (!conf.isEmpty("newTable")) {
+					// If oldTable is empty, use netstats otherwise use oldTable to be renamed
+					String oldTable = (conf.isEmpty("oldTable")) ? "netstats" : conf.getString("oldTable");
+					db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), oldTable, this);
+					db.rename(oldTable, conf.getString("newTable"));
+					config.put("newTable", conf.getString("newTable"));
+					config.put("oldTable", conf.getString("newTable"));
+				} else {
+					config.put("newTable", "netstats");
+				}
+				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("newTable"), this);
+			}
 		}
 		if (!disabled) {
+			runner = new NetRepeater(this);
 			PluginManager pm = getServer().getPluginManager();
 
 			// Register player events
@@ -83,22 +125,27 @@ public class Netstats extends JavaPlugin {
 			if ((Boolean)config.get("trackBroken") || (Boolean)config.get("trackPlaced")) {
 				blockListener = new NetBlockListener(this);
 				if ((Boolean)config.get("trackBroken")) {
-					pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
 				}
 				if ((Boolean)config.get("trackPlaced")) {
-					pm.registerEvent(Event.Type.BLOCK_PLACED, blockListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.BLOCK_PLACED, blockListener, Event.Priority.Monitor, this);
 				}
 			}
 
-			// Register entity events (death)
-			if ((Boolean)config.get("trackDeaths")) {
+			// Register entity events
+			if ((Boolean)config.get("trackDeaths") || (Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
 				entityListener = new NetEntityListener(this);
-				pm.registerEvent(Event.Type.ENTITY_DEATH, this.entityListener, Event.Priority.Normal, this);
+				if ((Boolean)config.get("trackDeaths")) {
+					pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Event.Priority.Normal, this);
+				}
+				if ((Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
+					pm.registerEvent(Event.Type.ENTITY_DAMAGED, entityListener, Event.Priority.Normal, this);
+				}
 			}
 
 			if ((Integer)config.get("updateRate") > 0) {
 				int rate = ((Integer)config.get("updateRate")*20);
-				this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new NetRepeater(this), rate, rate);
+				this.getServer().getScheduler().scheduleSyncRepeatingTask(this, runner, rate, rate);
 			}
 		} else {
 			this.getPluginLoader().disablePlugin(this);

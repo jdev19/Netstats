@@ -21,6 +21,7 @@ CREATE TABLE `netstats` (
   `broken` int(11) NOT NULL DEFAULT '0',
   `placed` int(11) NOT NULL DEFAULT '0',
   `deaths` int(11) NOT NULL DEFAULT '0',
+  `joindate` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 

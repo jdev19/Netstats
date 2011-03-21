@@ -44,6 +44,9 @@ while ($row = mysql_fetch_array($res)) {
     $broken = $row['broken'];
     $placed = $row['placed'];
     $deaths = $row['deaths'];
+    $joined = $row['joindate'];
+    $mobs = $row['mobskilled'];
+    $players = $row['playerskilled'];
 
 	// Total playtime
 	$total = $total/1000;
