@@ -64,10 +64,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setLong("seen", now);
 		} else {
 			// No previous data (good!), do everything like normal
-			InetSocketAddress IP = player.getAddress();
-			int port = IP.getPort();
-			String ip = IP.toString().replace("/", "");
-			ip = ip.replace(":"+port, "");
+                        String ip = player.getAddress().getAddress().getHostAddress().replace("/", "");
 			long now = System.currentTimeMillis();
 			// Player has been on the server before, else register them to database
 			if (db.hasData(name)) {
