@@ -56,7 +56,7 @@ public class NetPlayerListener extends PlayerListener {
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 			sql += "enter="+now+", seen="+now+", ";
-			sql += ((Boolean)config.get("trackIP")) ? "ip="+ip+", " : "";
+			sql += ((Boolean)config.get("trackIP")) ? "ip='"+ip+"', " : "";
 			sql += "total="+prop.getLong("total")+", logged=1 WHERE player='"+name+"';";
 			db.update(sql);
 			prop.setInt("broken", 0);
@@ -75,7 +75,7 @@ public class NetPlayerListener extends PlayerListener {
 			if (db.hasData(name)) {
 				// UPDATE enter, seen, status, and ip
 				sql = "UPDATE netstats SET enter="+now+", seen="+now;
-				sql += ((Boolean)config.get("trackIP")) ? ", ip="+ip : "";
+				sql += ((Boolean)config.get("trackIP")) ? ", ip='"+ip+"'" : "";
 				sql += ", logged=1 WHERE player='"+name+"';";
 				db.update(sql);
 				prop.setLong("enter", now);
@@ -102,7 +102,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player=\'"+name+"\';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
@@ -125,7 +125,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
+		sql += "total="+prop.getLong("total")+", logged=0 WHERE player=\'"+name+"\';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
