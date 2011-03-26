@@ -26,6 +26,15 @@ if ($trackPlaced) {
 if ($trackDeaths) {
 	echo '<th>Deaths</th>';
 }
+if ($trackMobs) {
+	echo '<th>Monsters Killed</th>';
+}
+if ($trackPlayer) {
+	echo '<th>Players Killed</th>';
+}
+if ($trackDistance) {
+	echo '<th>Distance Traveled</th>';
+}
 echo '<th>Last Login</th>';
 echo '<th>Last Seen</th>';
 echo '<th>Play Time</th>';
@@ -47,6 +56,7 @@ while ($row = mysql_fetch_array($res)) {
     $joined = $row['joindate'];
     $mobs = $row['mobskilled'];
     $players = $row['playerskilled'];
+    $distance = $row['distance'];
 
 	// Total playtime
 	$total = $total/1000;
@@ -93,6 +103,15 @@ while ($row = mysql_fetch_array($res)) {
     }
     if ($trackDeaths) {
         echo '<td>'.$deaths.'</td>';
+    }
+    if ($trackMobs) {
+        echo '<td>'.$mobs.'</td>';
+    }
+    if ($trackPlayer) {
+        echo '<td>'.$players.'</td>';
+    }
+    if ($trackDistance) {
+    	echo '<td>'.round($distance).'</td>';
     }
     echo '<td>'.date("D, M d g:i A", $login/1000).'</td>';
     echo '<td>'.$atime.'</td>';
