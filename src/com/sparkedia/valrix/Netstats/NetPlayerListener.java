@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.util.Vector;
 
 public class NetPlayerListener extends PlayerListener {
 	protected Netstats plugin;
@@ -15,18 +17,36 @@ public class NetPlayerListener extends PlayerListener {
 	private String pFolder;
 	private HashMap<String, Property> users;
 	private LinkedHashMap<String, Object> config;
+	private int updateRate;
 	
 	public NetPlayerListener(Netstats plugin) {
 		this.plugin = plugin;
 		this.pFolder = plugin.pFolder+"/players/";
 		this.users = plugin.users;
 		this.config = plugin.config;
+		this.updateRate = (Integer)config.get("updateRate");
 		this.db = plugin.db;
+	}
+
+	public void onPlayerMove(PlayerMoveEvent e) {
+		if (!e.isCancelled()) {
+			Player player = e.getPlayer();
+			String name = player.getName();
+			Vector from = e.getFrom().toVector();
+			Vector to = e.getTo().toVector();
+			double distance = to.distance(from);
+			if (!users.containsKey(name)) {
+				// They reloaded the plugins, time to re-set the player property files
+				users.put(name, new Property(pFolder+name+".stats", plugin));
+				plugin.actions.put(name, (updateRate/2));
+			}
+			Property prop = users.get(name);
+			prop.setDouble("distance", prop.getDouble("distance")+distance);
+		}
 	}
 	
 	public void onPlayerJoin(PlayerEvent e) {
-		Player player = e.getPlayer();
-		String name = player.getName();
+		String name = e.getPlayer().getName();
 		Property prop;
 		String sql = "";
 		// Use previous format of storing a user and their propfile to users
@@ -42,6 +62,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setInt("deaths", 0);
 			prop.setInt("mobsKilled", 0);
 			prop.setInt("playersKilled", 0);
+			prop.setDouble("distance", 0);
 			prop.save();
 		} else {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
@@ -51,7 +72,7 @@ public class NetPlayerListener extends PlayerListener {
 		// There's already some user data, let's save it and refresh their join data
 		if (prop.getInt("broken") != 0 || prop.getInt("placed") != 0 || prop.getInt("deaths") != 0) {
 			long now = System.currentTimeMillis();
-			InetSocketAddress IP = player.getAddress();
+			InetSocketAddress IP = e.getPlayer().getAddress();
 			int port = IP.getPort();
 			String ip = IP.toString().replace("/", "").replace(":"+port, "");
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
@@ -59,6 +80,7 @@ public class NetPlayerListener extends PlayerListener {
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 			sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 			sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+			sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 			sql += "enter="+now+", seen="+now+", ";
 			sql += ((Boolean)config.get("trackIP")) ? "ip='"+ip+"', " : "";
 			sql += "total="+prop.getLong("total")+", logged=1 WHERE player='"+name+"';";
@@ -68,12 +90,13 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setInt("deaths", 0);
 			prop.setInt("mobsKilled", 0);
 			prop.setInt("playersKilled", 0);
+			prop.setDouble("distance", 0);
 			prop.setLong("enter", now);
 			prop.setLong("seen", now);
 			prop.save();
 		} else {
 			// No previous data (good!), do everything like normal
-			InetSocketAddress IP = player.getAddress();
+			InetSocketAddress IP = e.getPlayer().getAddress();
 			int port = IP.getPort();
 			String ip = IP.toString().replace("/", "");
 			ip = ip.replace(":"+port, "");
@@ -113,6 +136,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
@@ -120,9 +144,12 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("deaths", 0);
 		prop.setInt("mobsKilled", 0);
 		prop.setInt("playersKilled", 0);
+		prop.setDouble("distance", 0);
 		prop.save();
 		users.remove(name);
-		plugin.actions.remove(name);
+		if (plugin.actions.containsKey(name)) {
+			plugin.actions.remove(name);
+		}
 	}
 	
 	public void onPlayerKick(PlayerEvent e) {
@@ -140,6 +167,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
@@ -147,8 +175,11 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("deaths", 0);
 		prop.setInt("mobsKilled", 0);
 		prop.setInt("playersKilled", 0);
+		prop.setDouble("distance", 0);
 		prop.save();
 		users.remove(name);
-		plugin.actions.remove(name);
+		if (plugin.actions.containsKey(name)) {
+			plugin.actions.remove(name);
+		}
 	}
 }

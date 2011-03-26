@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class Database {
@@ -162,14 +163,39 @@ public class Database {
 		}
 	}
 	
-	// Verify table meets newest standards (just like the config)
+	// Run a general query, this is for those few odd circumstances
+	public void query(String sql) {
+		Connection con = null;
+		try {
+			con = connection();
+			con.prepareStatement(sql).execute();
+		} catch (SQLException ex) {
+			log.severe('['+pName+"]: Could not set data, MySQL error for: "+ex);
+			return;
+		} catch (ClassNotFoundException ex) {
+			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			return;
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe('['+pName+"]: Failed to close connection.");
+			}
+		}
+	}
+	
 	public void build() {
 		Connection con = null;
 		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "";
 		try	{
+			// Return a list of the columns, we'll add the ones that aren't there
 			con = connection();
 			// Create the table if it doesn't exist
-			String sql = "CREATE TABLE IF NOT EXISTS "+table+" (";
+			sql = "CREATE TABLE IF NOT EXISTS "+table+" (";
 			sql += "id int(11) NOT NULL AUTO_INCREMENT, ";
 			sql += "player varchar(50) NOT NULL, ";
 			sql += "enter bigint(20) NOT NULL DEFAULT '0', ";
@@ -183,49 +209,51 @@ public class Database {
 			sql += "mobskilled int(11) NOT NULL DEFAULT '0', ";
 			sql += "playerskilled int(11) NOT NULL DEFAULT '0', ";
 			sql += "joindate bigint(20) NOT NULL DEFAULT '0', ";
+			sql += "distance double NOT NULL DEFAULT '0', ";
 			sql += "PRIMARY KEY (id)) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 			ps = con.prepareStatement(sql);
 			ps.execute();
-			
-			// Now run the script to check if it's updated
-			ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `mobskilled` int(11) NOT NULL DEFAULT '0' AFTER `deaths`");
-			ps.execute();
-			ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`");
-			ps.execute();
-			ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`");
-			ps.execute();
-		} catch (SQLException exc) {
-			if (exc.getCause() == null) {
-				try {
-					ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`");
-					ps.execute();
-					ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`");
-					ps.execute();
-				} catch (SQLException ex) {
-					if (ex.getCause() == null) {
-						try {
-							ps = con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`");
-							ps.execute();
-						} catch (SQLException e) {
-							if (e.getCause() != null) {
-								log.severe('['+pName+"]: Could not set data, MySQL error for: "+e);
-								return;
-							}
-						}
-					} else {
-						log.severe('['+pName+"]: Could not set data, MySQL error for: "+ex);
-						return;
-					}
+			con = connection();
+			ps = con.prepareStatement("SELECT * FROM `"+table+"`");
+			rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int count = rsmd.getColumnCount()+1;
+			// Add tables if they're not there
+			for (int i = 1; i < count; i++) {
+				if (i == (count-1) && rsmd.getColumnName(i).equals("deaths")) {
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `mobskilled` int(11) NOT NULL DEFAULT '0' AFTER `deaths`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
+					break;
 				}
-			} else {
-				log.severe('['+pName+"]: Could not set data, MySQL error for: "+exc);
-				return;
+				if (i == (count-1) && rsmd.getColumnName(i).equals("mobskilled")) {
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
+					break;
+				}
+				if (i == (count-1) && rsmd.getColumnName(i).equals("playerskilled")) {
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
+					break;
+				}
+				if (i == (count-1) && rsmd.getColumnName(i).equals("joindate")) {
+					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
+					break;
+				}
 			}
+		} catch (SQLException exc) {
+			log.severe('['+pName+"]: Could not set data, MySQL error for: "+exc);
+			return;
 		} catch (ClassNotFoundException ex) {
 			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
 			return;
 		} finally {
 			try {
+				if (rs != null) {
+					rs.close();
+				}
 				if (ps != null) {
 					ps.close();
 				}

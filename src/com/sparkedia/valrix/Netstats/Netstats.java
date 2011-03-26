@@ -63,6 +63,7 @@ public class Netstats extends JavaPlugin {
 			conf.setBoolean("trackDeaths", true);
 			conf.setBoolean("trackMonsterKills", true);
 			conf.setBoolean("trackPlayerKills", true);
+			conf.setBoolean("trackDistanceWalked", true);
 			conf.save();
 			log.severe('['+pName+"] Your config isn't set up. Creating one and disabling "+pName+'.');
 			disabled = true;
@@ -90,6 +91,7 @@ public class Netstats extends JavaPlugin {
 				tmp.put("trackDeaths", conf.getBoolean("trackDeaths"));
 				tmp.put("trackMonsterKills", conf.getBoolean("trackMonsterKills"));
 				tmp.put("trackPlayerKills", conf.getBoolean("trackPlayerKills"));
+				tmp.put("trackDistanceWalked", conf.getBoolean("trackDistanceWalked"));
 				// Check if old config matches new config format
 				if (!conf.match(tmp)) {
 					// They don't match, rebuild config
@@ -106,9 +108,10 @@ public class Netstats extends JavaPlugin {
 					config.put("newTable", conf.getString("newTable"));
 					config.put("oldTable", conf.getString("newTable"));
 				} else {
-					config.put("newTable", "netstats");
+					config.put("oldTable", "netstats");
 				}
-				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("newTable"), this);
+				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("oldTable"), this);
+				db.query("UPDATE "+config.get("oldTable")+" SET logged=0"); // This is a server crash "catch"
 			}
 		}
 		if (!disabled) {
@@ -120,6 +123,10 @@ public class Netstats extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Normal, this);
 			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Normal, this);
 			pm.registerEvent(Event.Type.PLAYER_KICK, playerListener, Event.Priority.Normal, this);
+			
+			if ((Boolean)config.get("trackDistanceWalked")) {
+				pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Normal, this);
+			}
 
 			// Register block events
 			if ((Boolean)config.get("trackBroken") || (Boolean)config.get("trackPlaced")) {

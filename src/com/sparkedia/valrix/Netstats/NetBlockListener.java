@@ -37,6 +37,7 @@ public class NetBlockListener extends BlockListener {
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
 				users.put(name, new Property(pFolder+name+".stats", plugin));
+				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
 			int count = actions.get(name)+1;
@@ -47,6 +48,9 @@ public class NetBlockListener extends BlockListener {
 				sql += "broken="+prop.getInt("broken")+", ";
 				sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+", " : "";
 				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
+				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+prop.getLong("seen")+", ";
 				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
@@ -54,6 +58,9 @@ public class NetBlockListener extends BlockListener {
 				prop.setInt("broken", 0);
 				prop.setInt("placed", 0);
 				prop.setInt("deaths", 0);
+				prop.setInt("mobsKilled", 0);
+				prop.setInt("playersKilled", 0);
+				prop.setDouble("distance", 0);
 				prop.setLong("seen", now);
 				prop.save();
 				// Reset watched actions back to 0 (zero)
@@ -64,6 +71,7 @@ public class NetBlockListener extends BlockListener {
 				prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 				prop.setLong("seen", now);
 				prop.save();
+				actions.put(name, count);
 			}
 		}
 	}
@@ -75,6 +83,7 @@ public class NetBlockListener extends BlockListener {
 			if (!users.containsKey(name)) {
 				// Plugin is reset, make sure to re-set the property files
 				users.put(name, new Property(pFolder+name+".stats", plugin));
+				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
 			int count = actions.get(name)+1;
@@ -85,6 +94,9 @@ public class NetBlockListener extends BlockListener {
 				sql += "placed="+prop.getInt("placed")+", ";
 				sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+", " : "";
 				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
+				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+prop.getLong("seen")+", ";
 				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
@@ -92,6 +104,9 @@ public class NetBlockListener extends BlockListener {
 				prop.setInt("broken", 0);
 				prop.setInt("placed", 0);
 				prop.setInt("deaths", 0);
+				prop.setInt("mobsKilled", 0);
+				prop.setInt("playersKilled", 0);
+				prop.setDouble("distance", 0);
 				prop.setLong("seen", now);
 				prop.save();
 				// Reset watched actions back to 0 (zero)
@@ -102,6 +117,7 @@ public class NetBlockListener extends BlockListener {
 				prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 				prop.setLong("seen", now);
 				prop.save();
+				actions.put(name, count);
 			}
 		}
 	}

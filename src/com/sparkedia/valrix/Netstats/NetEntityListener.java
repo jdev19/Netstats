@@ -47,9 +47,14 @@ public class NetEntityListener extends EntityListener {
 				String name = ((Player)damager).getName();
 				// Player killed a monster, save it to player's stats file
 				Property prop = users.get(name);
+				if (!users.containsKey(name)) {
+					users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
+					actions.put(name, (updateRate/2));
+				}
 				String sql = "";
+				int count = actions.get(name)+1;
 				prop.inc("mobsKilled");
-				if (actions.get(name) == updateRate) {
+				if (count == updateRate) {
 					prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 					prop.setLong("seen", now);
 					prop.save();
@@ -59,6 +64,7 @@ public class NetEntityListener extends EntityListener {
 					sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 					sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 					sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+					sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 					sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 					plugin.db.update(sql);
 					actions.put(name, 0);
@@ -68,7 +74,13 @@ public class NetEntityListener extends EntityListener {
 					prop.setInt("deaths", 0);
 					prop.setInt("mobsKilled", 0);
 					prop.setInt("playersKilled", 0);
+					prop.setDouble("distance", 0);
 					prop.save();
+				} else {
+					prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+					prop.setLong("seen", now);
+					prop.save();
+					actions.put(name, count);
 				}
 			}
 		} else if (victim instanceof Player && damager instanceof Player && (Boolean)config.get("trackPlayerKills")) {
@@ -77,8 +89,9 @@ public class NetEntityListener extends EntityListener {
 				// Player killed a player, save it to player's stats file
 				Property prop = users.get(name);
 				String sql = "";
+				int count = actions.get(name)+1;
 				prop.inc("playersKilled");
-				if (actions.get(name) == updateRate) {
+				if (count == updateRate) {
 					prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 					prop.setLong("seen", now);
 					prop.save();
@@ -88,6 +101,7 @@ public class NetEntityListener extends EntityListener {
 					sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 					sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 					sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+					sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 					sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 					plugin.db.update(sql);
 					actions.put(name, 0);
@@ -97,7 +111,13 @@ public class NetEntityListener extends EntityListener {
 					prop.setInt("deaths", 0);
 					prop.setInt("mobsKilled", 0);
 					prop.setInt("playersKilled", 0);
+					prop.setDouble("distance", 0);
 					prop.save();
+				} else {
+					prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+					prop.setLong("seen", now);
+					prop.save();
+					actions.put(name, count);
 				}
 			}
 		}

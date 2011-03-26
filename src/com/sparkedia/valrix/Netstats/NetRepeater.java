@@ -42,6 +42,7 @@ public class NetRepeater implements Runnable {
 				sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 				db.update(sql);
 				actions.put(name, 0);
@@ -51,6 +52,7 @@ public class NetRepeater implements Runnable {
 				prop.setInt("deaths", 0);
 				prop.setInt("mobsKilled", 0);
 				prop.setInt("playersKilled", 0);
+				prop.setDouble("distance", 0);
 				prop.save();
 			}
 		}
@@ -78,6 +80,7 @@ public class NetRepeater implements Runnable {
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 			sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 			sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
+			sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 			sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 			db.update(sql);
 			actions.put(name, 0);
@@ -87,6 +90,7 @@ public class NetRepeater implements Runnable {
 			prop.setInt("deaths", 0);
 			prop.setInt("mobsKilled", 0);
 			prop.setInt("playersKilled", 0);
+			prop.setDouble("distance", 0);
 			prop.save();
 			// Remove data as if they logged out
 			users.remove(name);
