@@ -18,15 +18,15 @@ public final class Property {
 	private Logger log;
 	protected Netstats plugin;
 	private LinkedHashMap<String, Object> properties = new LinkedHashMap<String, Object>();
-	private String fileName;
+	private String filename;
 	private String pName;
 
-	public Property(String fileName, Netstats plugin) {
+	public Property(String filename, Netstats plugin) {
 		this.plugin = plugin;
 		this.pName = plugin.pName;
 		this.log = plugin.log;
-		this.fileName = fileName;
-		File file = new File(fileName);
+		this.filename = filename;
+		File file = new File(filename);
 
 		if (file.exists()) {
 			load();
@@ -37,15 +37,15 @@ public final class Property {
 	
 	// Load data from file into ordered HashMap
 	public void load() {
-		BufferedReader reader = null;
+		BufferedReader br = null;
 		try {
-			reader = new BufferedReader(new FileReader(fileName));
+			br = new BufferedReader(new FileReader(filename));
 			String line;
 			int cc = 0; // # of comments
 			int lc = 0; // # of lines
 			
 			// While there are lines to read
-			while ((line = reader.readLine()) != null) {
+			while ((line = br.readLine()) != null) {
 				// and aren't blank
 				if (line.trim().length() == 0) {
 					continue;
@@ -71,31 +71,31 @@ public final class Property {
 				lc++;
 			}
 		} catch (FileNotFoundException ex) {
-			log.log(Level.SEVERE, '['+pName+"]: Couldn't find file "+fileName, ex);
+			log.log(Level.SEVERE, '['+pName+"]: Couldn't find file "+filename, ex);
 			return;
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, '['+pName+"]: Unable to save "+fileName, ex);
+			log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			return;
 		} finally {
 			// Close the reader
 			try {
-				if (reader != null) {
-					reader.close();
+				if (br != null) {
+					br.close();
 				}
 			} catch (IOException ex) {
-				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+fileName, ex);
+				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			}
 		}
 	}
 	
 	// Save data from LinkedHashMap to file
 	public void save() {
-		BufferedWriter bufferedWriter = null;
+		BufferedWriter bw = null;
 		try {
 			// Construct the BufferedWriter object
-			bufferedWriter = new BufferedWriter(new FileWriter(fileName));
-			bufferedWriter.write("# "+pName+" Properties File");
-			bufferedWriter.newLine();
+			bw = new BufferedWriter(new FileWriter(filename));
+			bw.write("# "+pName+" Properties File");
+			bw.newLine();
 			
 			// Save all the properties one at a time, only if there's data to write
 			if (properties.size() > 0) {
@@ -113,30 +113,30 @@ public final class Property {
 					// If it starts with "com", it's a comment so write it as such
 					if (key.startsWith("com")) {
 						// Writing a comment to the file
-						bufferedWriter.write("# "+val);
-						bufferedWriter.newLine();
+						bw.write("# "+val);
+						bw.newLine();
 					} else {
 						// Otherwise write the key and value pair as key=value
-						bufferedWriter.write(key+'='+val);
-						bufferedWriter.newLine();
+						bw.write(key+'='+val);
+						bw.newLine();
 					}
 				}
 			}
 		} catch (FileNotFoundException ex) {
-			log.log(Level.SEVERE, '['+pName+"]: Couldn't find file "+fileName, ex);
+			log.log(Level.SEVERE, '['+pName+"]: Couldn't find file "+filename, ex);
 			return;
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, '['+pName+"]: Unable to save "+fileName, ex);
+			log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			return;
 		} finally {
 			// Close the BufferedWriter
 			try {
-				if (bufferedWriter != null) {
-					bufferedWriter.flush();
-					bufferedWriter.close();
+				if (bw != null) {
+					bw.flush();
+					bw.close();
 				}
 			} catch (IOException ex) {
-				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+fileName, ex);
+				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			}
 		}
 	}

@@ -1,5 +1,9 @@
 package com.sparkedia.valrix.Netstats;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import java.sql.Connection;
@@ -9,11 +13,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-public class Database {
+public final class Database {
 	protected Netstats plugin;
 	private Logger log;
 	public int i = 0;
 	private String pName;
+	private String pFolder;
 	protected String host;
 	protected String db;
 	protected String username;
@@ -23,6 +28,7 @@ public class Database {
 	public Database(String host, String db, String username, String password, String table, Netstats plugin) {
 		this.plugin = plugin;
 		this.pName = plugin.pName;
+		this.pFolder = plugin.pFolder;
 		this.log = plugin.log;
 		this.host = host;
 		this.db = db;
@@ -32,10 +38,31 @@ public class Database {
 		// If the table doesn't exist, build() will make it, otherwise it'll update it
 		build();
 	}
+
+	private final static String getDateTime() {
+		Calendar c = Calendar.getInstance();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss");  
+		df.setTimeZone(c.getTimeZone());  
+		return df.format(new Date());  
+	} 
 	
 	private Connection connection() throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
 		return DriverManager.getConnection("jdbc:mysql://"+host+'/'+db, username, password);
+	}
+	
+	private String version() {
+		Connection con;
+		String v = null;
+		try {
+			con = connection();
+			v = con.prepareStatement("SELECT @@version").executeQuery().getString(1);
+		} catch (ClassNotFoundException e) {
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
+		} catch (SQLException e) {
+			log.severe('['+pName+"]: Error occurred when checking MySQL Version. Please inform "+plugin.getDescription().getAuthors().get(0)+'.');
+		}
+		return v;
 	}
 	
 	// Check if a player has any data
@@ -51,10 +78,20 @@ public class Database {
 			rs = ps.executeQuery();
 			has = rs.next();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Could not fetch data, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
+			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Version", version());
+			err.setString("MySQL Error", ex.toString());
+			try {
+				err.setString("Offending Statement", rs.getStatement().toString());
+			} catch (SQLException e) {
+			}
+			err.save();
 			return false;
 		} catch (ClassNotFoundException e) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+e);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return false;
 		} finally {
 			try	{
@@ -68,7 +105,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 		return has;
@@ -81,12 +118,12 @@ public class Database {
 			con = connection();
 			String sql = "RENAME TABLE "+oldTable+" TO "+newTable+';';
 			ps = con.prepareStatement(sql);
-			ps.execute();
+			ps.executeQuery();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Could not rename table, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Failed to rename table "+oldTable+" to "+newTable+". Does "+oldTable+" exist?");
 			return;
 		} catch (ClassNotFoundException ex) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return;
 		} finally {
 			try {
@@ -97,7 +134,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 	}
@@ -108,13 +145,21 @@ public class Database {
 		PreparedStatement ps = null;
 		try {
 			con = connection();
-			ps = con.prepareStatement("UPDATE "+table+" SET "+sql);
+			sql = "UPDATE "+table+" SET "+sql;
+			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Could not set data, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
+			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Version", version());
+			err.setString("MySQL Error", ex.toString());
+			err.setString("Offending Statement", sql);
+			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return;
 		} finally {
 			try {
@@ -125,7 +170,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 	}
@@ -144,10 +189,16 @@ public class Database {
 			ps.setLong(5, time);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Could not set data, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Failed to register user to database. Saving error log to "+pFolder+"/logs");
+			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Version", version());
+			err.setString("MySQL Error", ex.toString());
+			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return;
 		} finally {
 			try {
@@ -158,7 +209,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 	}
@@ -170,10 +221,17 @@ public class Database {
 			con = connection();
 			con.prepareStatement(sql).execute();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Could not set data, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
+			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Version", version());
+			err.setString("MySQL Error", ex.toString());
+			err.setString("Offending Statement", sql);
+			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return;
 		} finally {
 			try {
@@ -181,7 +239,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 	}
@@ -243,11 +301,17 @@ public class Database {
 					break;
 				}
 			}
-		} catch (SQLException exc) {
-			log.severe('['+pName+"]: Could not set data, MySQL error for: "+exc);
+		} catch (SQLException ex) {
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
+			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Version", version());
+			err.setString("MySQL Error", ex.toString());
+			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
-			log.severe('['+pName+"]: Database connector not found, MySQL error for: "+ex);
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
 			return;
 		} finally {
 			try {
@@ -261,7 +325,7 @@ public class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close connection.");
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
 		}
 	}

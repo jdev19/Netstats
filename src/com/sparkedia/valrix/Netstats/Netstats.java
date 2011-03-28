@@ -16,7 +16,7 @@ public class Netstats extends JavaPlugin {
 	private NetEntityListener entityListener;
 	public Logger log = Logger.getLogger("Minecraft");
 	public LinkedHashMap<String, Object> config;
-	public HashMap<String, Property> users  = new HashMap<String, Property>();; // <Name, Propfile>
+	public HashMap<String, Property> users  = new HashMap<String, Property>(); // <Name, Propfile>
 	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
 	public String pName;
 	public String pFolder;
@@ -44,6 +44,17 @@ public class Netstats extends JavaPlugin {
 		if (!(new File(pFolder+"/players").isDirectory())) {
 			(new File(pFolder+"/players")).mkdir();
 		}
+		
+		// Check if the /lib/ folder exists, this check will hopefully not be needed later
+		if (!(new File("./lib").isDirectory())) {
+			new File("./lib").mkdir();
+		}
+		
+		// Check if MySQL connector exists, if not then download and install it
+		if (!(new File("./lib/mysql-connector-java-bin.jar")).exists()) {
+			new Downloader("http://dl.dropbox.com/u/1449544/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
+		}
+		
 		//Does config exist, if not then make a new one and add defaults
 		if (!(new File(pFolder+"/config.txt").exists())) {
 			Property conf = new Property(pFolder+"/config.txt", this);
@@ -143,10 +154,10 @@ public class Netstats extends JavaPlugin {
 			if ((Boolean)config.get("trackDeaths") || (Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
 				entityListener = new NetEntityListener(this);
 				if ((Boolean)config.get("trackDeaths")) {
-					pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Event.Priority.Monitor, this);
 				}
 				if ((Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
-					pm.registerEvent(Event.Type.ENTITY_DAMAGED, entityListener, Event.Priority.Normal, this);
+					pm.registerEvent(Event.Type.ENTITY_DAMAGED, entityListener, Event.Priority.Monitor, this);
 				}
 			}
 

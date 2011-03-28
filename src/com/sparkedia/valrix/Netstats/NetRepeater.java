@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class NetRepeater implements Runnable {
+public final class NetRepeater implements Runnable {
 	protected Netstats plugin;
 	protected Database db;
 	private HashMap<String, Property> users;
