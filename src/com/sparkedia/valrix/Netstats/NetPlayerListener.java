@@ -14,14 +14,14 @@ import org.bukkit.util.Vector;
 public class NetPlayerListener extends PlayerListener {
 	protected Netstats plugin;
 	protected Database db;
-	private String pFolder;
+	private String players;
 	private HashMap<String, Property> users;
 	private LinkedHashMap<String, Object> config;
 	private int updateRate;
 	
 	public NetPlayerListener(Netstats plugin) {
 		this.plugin = plugin;
-		this.pFolder = plugin.pFolder+"/players/";
+		this.players = plugin.players;
 		this.users = plugin.users;
 		this.config = plugin.config;
 		this.updateRate = (Integer)config.get("updateRate");
@@ -37,7 +37,7 @@ public class NetPlayerListener extends PlayerListener {
 			double distance = to.distance(from);
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(pFolder+name+".stats", plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 				plugin.actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
@@ -46,12 +46,17 @@ public class NetPlayerListener extends PlayerListener {
 	}
 	
 	public void onPlayerJoin(PlayerEvent e) {
+		long now = System.currentTimeMillis();
+		InetSocketAddress IP = e.getPlayer().getAddress();
+		String[] ips = IP.toString().split("/");
+		String ip = ips[1].replace(":"+IP.getPort(), "");
 		String name = e.getPlayer().getName();
 		Property prop;
 		String sql = "";
+		String statfile = plugin.getCanonFile(players+name+".stats");
 		// Use previous format of storing a user and their propfile to users
-		if (!(new File(pFolder+name+".stats")).exists()) {
-			users.put(name, new Property(pFolder+name+".stats", plugin));
+		if (!(new File(statfile)).exists()) {
+			users.put(name, new Property(statfile, plugin));
 			plugin.actions.put(name, 0);
 			prop = users.get(name);
 			prop.setLong("enter", 0);
@@ -65,16 +70,12 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setDouble("distance", 0);
 			prop.save();
 		} else {
-			users.put(name, new Property(pFolder+name+".stats", plugin));
+			users.put(name, new Property(statfile, plugin));
 			plugin.actions.put(name, 0);
 			prop = users.get(name);
 		}
 		// There's already some user data, let's save it and refresh their join data
 		if (prop.getInt("broken") != 0 || prop.getInt("placed") != 0 || prop.getInt("deaths") != 0) {
-			long now = System.currentTimeMillis();
-			InetSocketAddress IP = e.getPlayer().getAddress();
-			int port = IP.getPort();
-			String ip = IP.toString().replace("/", "").replace(":"+port, "");
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
@@ -96,11 +97,6 @@ public class NetPlayerListener extends PlayerListener {
 			prop.save();
 		} else {
 			// No previous data (good!), do everything like normal
-			InetSocketAddress IP = e.getPlayer().getAddress();
-			int port = IP.getPort();
-			String ip = IP.toString().replace("/", "");
-			ip = ip.replace(":"+port, "");
-			long now = System.currentTimeMillis();
 			// Player has been on the server before, else register them to database
 			if (db.hasData(name)) {
 				// UPDATE enter, seen, status, and ip
@@ -128,7 +124,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.save();
 		String sql = "";
 		if (!users.containsKey(name)) {
-			users.put(name, new Property(pFolder+name+".stats", plugin));
+			users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 		}
 		// Store all data to database
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
@@ -159,7 +155,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 		String sql = "";
 		if (!users.containsKey(name)) {
-			users.put(name, new Property(pFolder+name+".stats", plugin));
+			users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 		}
 		// Store all data to database
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";

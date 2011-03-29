@@ -11,7 +11,7 @@ public class NetBlockListener extends BlockListener {
 	protected Netstats plugin;
 	private HashMap<String, Property> users;
 	private HashMap<String, Integer> actions;
-	private String pFolder;
+	private String players;
 	protected LinkedHashMap<String, Object> config;
 	protected String host;
 	protected String database;
@@ -22,7 +22,7 @@ public class NetBlockListener extends BlockListener {
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
-		this.pFolder = plugin.pFolder+"/players/";
+		this.players = plugin.players;
 		this.config = plugin.config;
 		this.users = plugin.users;
 		this.actions = plugin.actions;
@@ -36,7 +36,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(pFolder+name+".stats", plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
@@ -82,7 +82,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// Plugin is reset, make sure to re-set the property files
-				users.put(name, new Property(pFolder+name+".stats", plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);

@@ -21,11 +21,12 @@ public class Netstats extends JavaPlugin {
 	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
 	public String pName;
 	public String pFolder;
+	public String players;
 	public Database db;
 	private NetRepeater runner;
 	private Boolean disabled = false;
 	
-	private String getCanonPath(String dir) {
+	public String getCanonPath(String dir) {
 		String cp = null;
 		try {
 			cp = new File(dir).getCanonicalPath();
@@ -35,7 +36,7 @@ public class Netstats extends JavaPlugin {
 		return cp;
 	}
 	
-	private String getCanonFile(String file) {
+	public String getCanonFile(String file) {
 		String cf = null;
 		try {
 			cf = new File(file).getCanonicalFile().toString();
@@ -68,7 +69,7 @@ public class Netstats extends JavaPlugin {
 		if (!(new File(pFolder)).isDirectory()) {
 			new File(pFolder).mkdir();
 		}
-		String players = getCanonPath(pFolder+"/players");
+		players = getCanonPath(pFolder+"/players");
 		String logs = getCanonPath(pFolder+"/logs");
 		String lib = getCanonPath("./lib");
 		String configFile = getCanonFile(pFolder+"/config.txt");
@@ -90,7 +91,7 @@ public class Netstats extends JavaPlugin {
 		
 		// Check if MySQL connector exists, if not then download and install it
 		if (!(new File(getCanonFile(lib+"/mysql-connector-java-bin.jar"))).exists()) {
-			new Downloader("http://dl.dropbox.com/u/1449544/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
+			new Downloader("http://dl.dropbox.com/u/1449544/deps/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
 		}
 		
 		//Does config exist, if not then make a new one and add defaults

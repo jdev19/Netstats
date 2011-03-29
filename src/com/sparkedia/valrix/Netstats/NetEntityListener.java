@@ -13,7 +13,7 @@ import org.bukkit.event.entity.EntityListener;
 
 public class NetEntityListener extends EntityListener {
 	protected Netstats plugin;
-	private String pFolder;
+	private String players;
 	private HashMap<String, Property> users;
 	private HashMap<String, Integer> actions;
 	public LinkedHashMap<String, Object> config;
@@ -23,7 +23,7 @@ public class NetEntityListener extends EntityListener {
 		this.plugin = plugin;
 		this.users = plugin.users;
 		this.actions = plugin.actions;
-		this.pFolder = plugin.pFolder;
+		this.players = plugin.players;
 		this.config = plugin.config;
 		this.updateRate = (Integer)config.get("updateRate");
 	}
@@ -33,7 +33,7 @@ public class NetEntityListener extends EntityListener {
 		if (entity instanceof Player) {
 			String name = ((Player)entity).getName();
 			if (!users.containsKey(name)) {
-				users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 			}
 			users.get(name).inc("deaths");
 		}
@@ -56,7 +56,7 @@ public class NetEntityListener extends EntityListener {
 						// Player killed a monster, save it to player's stats file
 						Property prop = users.get(name);
 						if (!users.containsKey(name)) {
-							users.put(name, new Property(pFolder+"/players/"+name+".stats", plugin));
+							users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
 							actions.put(name, (updateRate/2));
 						}
 						String sql = "";
@@ -99,6 +99,10 @@ public class NetEntityListener extends EntityListener {
 					if ((life-damage) <= 0) {
 						String name = d.getName();
 						// Player killed a player, save it to player's stats file
+						if (!users.containsKey(name)) {
+							users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+							actions.put(name, (updateRate/2));
+						}
 						Property prop = users.get(name);
 						String sql = "";
 						int count = actions.get(name)+1;
