@@ -1,6 +1,7 @@
 package com.sparkedia.valrix.Netstats;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
@@ -24,6 +25,27 @@ public class Netstats extends JavaPlugin {
 	private NetRepeater runner;
 	private Boolean disabled = false;
 	
+	private String getCanonPath(String dir) {
+		String cp = null;
+		try {
+			cp = new File(dir).getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return cp;
+	}
+	
+	private String getCanonFile(String file) {
+		String cf = null;
+		try {
+			cf = new File(file).getCanonicalFile().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return cf;
+	}
+	
+	@Override
 	public void onDisable() {
 		if (!users.isEmpty()) {
 			// There are still users logged in! Quick, save their data first!
@@ -33,36 +55,52 @@ public class Netstats extends JavaPlugin {
 		log.info('['+pName+"] v"+pdf.getVersion()+" has been disabled.");
 	}
 	
+	@Override
 	public void onEnable() {
-		pFolder = this.getDataFolder().toString().replace("\\", "/");
 		// Log that the plugin has been enabled
 		PluginDescriptionFile pdf = this.getDescription();
 		pName = pdf.getName();
 		log.info('['+pName+"] v"+pdf.getVersion()+" has been enabled.");
 		
+		pFolder = getCanonPath(this.getDataFolder().toString());
+		
+		// First make sure the plugin data folder even exists
+		if (!(new File(pFolder)).isDirectory()) {
+			new File(pFolder).mkdir();
+		}
+		String players = getCanonPath(pFolder+"/players");
+		String logs = getCanonPath(pFolder+"/logs");
+		String lib = getCanonPath("./lib");
+		String configFile = getCanonFile(pFolder+"/config.txt");
+		
 		// Check if players folder exists or create it
-		if (!(new File(pFolder+"/players").isDirectory())) {
-			new File(pFolder+"/players").mkdir();
+		if (!(new File(players).isDirectory())) {
+			new File(players).mkdir();
 		}
 		
 		// Make the directory for error logs if it doesn't exist
-		if (!(new File(pFolder+"/logs").isDirectory())) {
-			new File(pFolder+"/logs").mkdir();
+		if (!(new File(logs).isDirectory())) {
+			new File(logs).mkdir();
 		}
 		
 		// Check if the /lib/ folder exists, this check will hopefully not be needed later
-		if (!(new File("./lib").isDirectory())) {
-			new File("./lib").mkdir();
+		if (!(new File(lib).isDirectory())) {
+			new File(lib).mkdir();
 		}
 		
 		// Check if MySQL connector exists, if not then download and install it
-		if (!(new File("./lib/mysql-connector-java-bin.jar")).exists()) {
+		if (!(new File(getCanonFile(lib+"/mysql-connector-java-bin.jar"))).exists()) {
 			new Downloader("http://dl.dropbox.com/u/1449544/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
 		}
 		
 		//Does config exist, if not then make a new one and add defaults
-		if (!(new File(pFolder+"/config.txt").exists())) {
-			Property conf = new Property(pFolder+"/config.txt", this);
+		if (!(new File(configFile).exists())) {
+			try {
+				new File(configFile).createNewFile();
+			} catch (IOException e) {
+				log.severe('['+pName+"]: Couldn't create config file. Make sure your plugins directory has write access.");
+			}
+			Property conf = new Property(configFile, this);
 			conf.setString("host", "");
 			conf.setString("database", "");
 			conf.setString("username", "");
@@ -85,18 +123,17 @@ public class Netstats extends JavaPlugin {
 			disabled = true;
 		} else {
 			// File exists, check if the database info is there
-			Property conf = new Property(pFolder+"/config.txt", this);
-			if (conf.isEmpty("host") || conf.isEmpty("database") || conf.isEmpty("username") || conf.isEmpty("password")) {
+			Property conf = new Property(configFile, this);
+			if (conf.isEmpty("host") || conf.isEmpty("database") || conf.isEmpty("username")) {
 				log.severe('['+pName+"] Your database settings aren't set. Disabling "+pName+'.');
 				disabled = true;
 			} else {
-				String pass = (conf.getString("password").equalsIgnoreCase("null")) ? "" : conf.getString("password");
 				// Database info exists, build a temporary config in the newest format
 				LinkedHashMap<String, Object> tmp = new LinkedHashMap<String, Object>();
 				tmp.put("host", conf.getString("host"));
 				tmp.put("database", conf.getString("database"));
 				tmp.put("username", conf.getString("username"));
-				tmp.put("password", pass);
+				tmp.put("password", conf.getString("password"));
 				tmp.put("oldTable", conf.getString("oldTable"));
 				tmp.put("newTable", conf.getString("newTable"));
 				tmp.put("actions", conf.getInt("actions"));
