@@ -42,7 +42,12 @@ public class Netstats extends JavaPlugin {
 		
 		// Check if players folder exists or create it
 		if (!(new File(pFolder+"/players").isDirectory())) {
-			(new File(pFolder+"/players")).mkdir();
+			new File(pFolder+"/players").mkdir();
+		}
+		
+		// Make the directory for error logs if it doesn't exist
+		if (!(new File(pFolder+"/logs").isDirectory())) {
+			new File(pFolder+"/logs").mkdir();
 		}
 		
 		// Check if the /lib/ folder exists, this check will hopefully not be needed later
@@ -85,12 +90,13 @@ public class Netstats extends JavaPlugin {
 				log.severe('['+pName+"] Your database settings aren't set. Disabling "+pName+'.');
 				disabled = true;
 			} else {
+				String pass = (conf.getString("password").equalsIgnoreCase("null")) ? "" : conf.getString("password");
 				// Database info exists, build a temporary config in the newest format
 				LinkedHashMap<String, Object> tmp = new LinkedHashMap<String, Object>();
 				tmp.put("host", conf.getString("host"));
 				tmp.put("database", conf.getString("database"));
 				tmp.put("username", conf.getString("username"));
-				tmp.put("password", conf.getString("password"));
+				tmp.put("password", pass);
 				tmp.put("oldTable", conf.getString("oldTable"));
 				tmp.put("newTable", conf.getString("newTable"));
 				tmp.put("actions", conf.getInt("actions"));

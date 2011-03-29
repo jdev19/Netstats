@@ -41,7 +41,7 @@ public final class Database {
 
 	private final static String getDateTime() {
 		Calendar c = Calendar.getInstance();
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss");  
+		DateFormat df = new SimpleDateFormat("MMddhhmmss");  
 		df.setTimeZone(c.getTimeZone());  
 		return df.format(new Date());  
 	} 
@@ -49,20 +49,6 @@ public final class Database {
 	private Connection connection() throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
 		return DriverManager.getConnection("jdbc:mysql://"+host+'/'+db, username, password);
-	}
-	
-	private String version() {
-		Connection con;
-		String v = null;
-		try {
-			con = connection();
-			v = con.prepareStatement("SELECT @@version").executeQuery().getString(1);
-		} catch (ClassNotFoundException e) {
-			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
-		} catch (SQLException e) {
-			log.severe('['+pName+"]: Error occurred when checking MySQL Version. Please inform "+plugin.getDescription().getAuthors().get(0)+'.');
-		}
-		return v;
 	}
 	
 	// Check if a player has any data
@@ -82,7 +68,6 @@ public final class Database {
 			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
-			err.setString("MySQL Version", version());
 			err.setString("MySQL Error", ex.toString());
 			try {
 				err.setString("Offending Statement", rs.getStatement().toString());
@@ -146,6 +131,8 @@ public final class Database {
 		try {
 			con = connection();
 			sql = "UPDATE "+table+" SET "+sql;
+			String[] sqls = sql.split(";");
+			sql = sqls[0];
 			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -153,7 +140,6 @@ public final class Database {
 			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
-			err.setString("MySQL Version", version());
 			err.setString("MySQL Error", ex.toString());
 			err.setString("Offending Statement", sql);
 			err.save();
@@ -193,7 +179,6 @@ public final class Database {
 			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
-			err.setString("MySQL Version", version());
 			err.setString("MySQL Error", ex.toString());
 			err.save();
 			return;
@@ -219,13 +204,14 @@ public final class Database {
 		Connection con = null;
 		try {
 			con = connection();
+			String[] sqls = sql.split(";");
+			sql = sqls[0];
 			con.prepareStatement(sql).execute();
 		} catch (SQLException ex) {
 			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
 			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
-			err.setString("MySQL Version", version());
 			err.setString("MySQL Error", ex.toString());
 			err.setString("Offending Statement", sql);
 			err.save();
@@ -306,7 +292,6 @@ public final class Database {
 			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
-			err.setString("MySQL Version", version());
 			err.setString("MySQL Error", ex.toString());
 			err.save();
 			return;

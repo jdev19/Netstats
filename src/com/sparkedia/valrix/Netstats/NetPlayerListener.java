@@ -127,7 +127,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 		prop.save();
 		String sql = "";
-		if (users.containsKey(name)) {
+		if (!users.containsKey(name)) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		// Store all data to database
@@ -158,7 +158,7 @@ public class NetPlayerListener extends PlayerListener {
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 		String sql = "";
-		if (users.containsKey(name)) {
+		if (!users.containsKey(name)) {
 			users.put(name, new Property(pFolder+name+".stats", plugin));
 		}
 		// Store all data to database

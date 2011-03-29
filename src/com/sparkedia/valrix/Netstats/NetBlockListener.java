@@ -45,9 +45,9 @@ public class NetBlockListener extends BlockListener {
 			if (count == updateRate) {
 				long now = System.currentTimeMillis();
 				String sql = "";
-				sql += "broken="+prop.getInt("broken")+", ";
-				sql += (prop.getInt("placed") > 0) ? "placed="+prop.getInt("placed")+", " : "";
-				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += "broken=broken+"+prop.getInt("broken")+", ";
+				sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
+				sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
@@ -91,9 +91,9 @@ public class NetBlockListener extends BlockListener {
 			if (count == updateRate) {
 				long now = System.currentTimeMillis();
 				String sql = "";
-				sql += "placed="+prop.getInt("placed")+", ";
-				sql += (prop.getInt("broken") > 0) ? "broken="+prop.getInt("broken")+", " : "";
-				sql += (prop.getInt("deaths") > 0) ? "deaths="+prop.getInt("deaths")+", " : "";
+				sql += "placed=placed+"+prop.getInt("placed")+", ";
+				sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
+				sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
