@@ -36,7 +36,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
@@ -82,7 +82,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// Plugin is reset, make sure to re-set the property files
-				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 				actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);

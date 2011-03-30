@@ -18,7 +18,7 @@ public final class Database {
 	private Logger log;
 	public int i = 0;
 	private String pName;
-	private String pFolder;
+	private String logs;
 	protected String host;
 	protected String db;
 	protected String username;
@@ -28,7 +28,7 @@ public final class Database {
 	public Database(String host, String db, String username, String password, String table, Netstats plugin) {
 		this.plugin = plugin;
 		this.pName = plugin.pName;
-		this.pFolder = plugin.pFolder;
+		this.logs = plugin.logs;
 		this.log = plugin.log;
 		this.host = host;
 		this.db = db;
@@ -64,8 +64,8 @@ public final class Database {
 			rs = ps.executeQuery();
 			has = rs.next();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
-			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
@@ -136,8 +136,8 @@ public final class Database {
 			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
-			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
@@ -175,8 +175,8 @@ public final class Database {
 			ps.setLong(5, time);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Failed to register user to database. Saving error log to "+pFolder+"/logs");
-			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			log.severe('['+pName+"]: Failed to register user to database. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
@@ -208,8 +208,8 @@ public final class Database {
 			sql = sqls[0];
 			con.prepareStatement(sql).execute();
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
-			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
@@ -288,8 +288,8 @@ public final class Database {
 				}
 			}
 		} catch (SQLException ex) {
-			log.severe('['+pName+"]: Severe database error. Saving error log to "+pFolder+"/logs");
-			ErrorLog err = new ErrorLog(pFolder+"/logs/NetErr_"+getDateTime()+".log", plugin);
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());

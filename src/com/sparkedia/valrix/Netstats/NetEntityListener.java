@@ -33,7 +33,7 @@ public class NetEntityListener extends EntityListener {
 		if (entity instanceof Player) {
 			String name = ((Player)entity).getName();
 			if (!users.containsKey(name)) {
-				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 			}
 			users.get(name).inc("deaths");
 		}
@@ -56,7 +56,7 @@ public class NetEntityListener extends EntityListener {
 						// Player killed a monster, save it to player's stats file
 						Property prop = users.get(name);
 						if (!users.containsKey(name)) {
-							users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+							users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 							actions.put(name, (updateRate/2));
 						}
 						String sql = "";
@@ -100,7 +100,7 @@ public class NetEntityListener extends EntityListener {
 						String name = d.getName();
 						// Player killed a player, save it to player's stats file
 						if (!users.containsKey(name)) {
-							users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+							users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 							actions.put(name, (updateRate/2));
 						}
 						Property prop = users.get(name);

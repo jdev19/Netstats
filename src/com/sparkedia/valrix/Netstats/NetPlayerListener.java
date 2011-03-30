@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.Vector;
 
 public class NetPlayerListener extends PlayerListener {
@@ -37,7 +39,7 @@ public class NetPlayerListener extends PlayerListener {
 			double distance = to.distance(from);
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
+				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 				plugin.actions.put(name, (updateRate/2));
 			}
 			Property prop = users.get(name);
@@ -45,7 +47,7 @@ public class NetPlayerListener extends PlayerListener {
 		}
 	}
 	
-	public void onPlayerJoin(PlayerEvent e) {
+	public void onPlayerJoin(PlayerJoinEvent e) {
 		long now = System.currentTimeMillis();
 		InetSocketAddress IP = e.getPlayer().getAddress();
 		String[] ips = IP.toString().split("/");
@@ -53,7 +55,7 @@ public class NetPlayerListener extends PlayerListener {
 		String name = e.getPlayer().getName();
 		Property prop;
 		String sql = "";
-		String statfile = plugin.getCanonFile(players+name+".stats");
+		String statfile = plugin.getCanonFile(players+'/'+name+".stats");
 		// Use previous format of storing a user and their propfile to users
 		if (!(new File(statfile)).exists()) {
 			users.put(name, new Property(statfile, plugin));
@@ -116,16 +118,16 @@ public class NetPlayerListener extends PlayerListener {
 		}
 	}
 	
-	public void onPlayerQuit(PlayerEvent e) {
+	public void onPlayerQuit(PlayerQuitEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
+		if (!users.containsKey(name)) {
+			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+		}
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 		prop.save();
 		String sql = "";
-		if (!users.containsKey(name)) {
-			users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
-		}
 		// Store all data to database
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
@@ -151,12 +153,12 @@ public class NetPlayerListener extends PlayerListener {
 	public void onPlayerKick(PlayerEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
+		if (!users.containsKey(name)) {
+			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+		}
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 		String sql = "";
-		if (!users.containsKey(name)) {
-			users.put(name, new Property(plugin.getCanonFile(players+name+".stats"), plugin));
-		}
 		// Store all data to database
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";

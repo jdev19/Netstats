@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,8 +21,10 @@ public class Netstats extends JavaPlugin {
 	public HashMap<String, Property> users  = new HashMap<String, Property>(); // <Name, Propfile>
 	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
 	public String pName;
-	public String pFolder;
+	public String df; // Data Folder
 	public String players;
+	public String logs;
+	public String lib;
 	public Database db;
 	private NetRepeater runner;
 	private Boolean disabled = false;
@@ -46,7 +49,6 @@ public class Netstats extends JavaPlugin {
 		return cf;
 	}
 	
-	@Override
 	public void onDisable() {
 		if (!users.isEmpty()) {
 			// There are still users logged in! Quick, save their data first!
@@ -56,23 +58,22 @@ public class Netstats extends JavaPlugin {
 		log.info('['+pName+"] v"+pdf.getVersion()+" has been disabled.");
 	}
 	
-	@Override
 	public void onEnable() {
 		// Log that the plugin has been enabled
 		PluginDescriptionFile pdf = this.getDescription();
 		pName = pdf.getName();
 		log.info('['+pName+"] v"+pdf.getVersion()+" has been enabled.");
 		
-		pFolder = getCanonPath(this.getDataFolder().toString());
+		df = getCanonPath(this.getDataFolder().toString());
 		
 		// First make sure the plugin data folder even exists
-		if (!(new File(pFolder)).isDirectory()) {
-			new File(pFolder).mkdir();
+		if (!(new File(df)).isDirectory()) {
+			new File(df).mkdir();
 		}
-		players = getCanonPath(pFolder+"/players");
-		String logs = getCanonPath(pFolder+"/logs");
-		String lib = getCanonPath("./lib");
-		String configFile = getCanonFile(pFolder+"/config.txt");
+		players = getCanonPath(df+"/players");
+		logs = getCanonPath(df+"/logs");
+		lib = getCanonPath("./lib");
+		String configFile = getCanonFile(df+"/config.txt");
 		
 		// Check if players folder exists or create it
 		if (!(new File(players).isDirectory())) {
@@ -166,7 +167,13 @@ public class Netstats extends JavaPlugin {
 					config.put("oldTable", "netstats");
 				}
 				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("oldTable"), this);
-				db.query("UPDATE "+config.get("oldTable")+" SET logged=0"); // This is a server crash "catch"
+				// First, the plugin is either reloading or is starting up, so set all users to being logged off
+				db.query("UPDATE "+config.get("oldTable")+" SET logged=0");
+				// If the plugin is just reloading, we need to set all online players back to being online
+				Player[] p = this.getServer().getOnlinePlayers();
+				for (int i = 0; i < p.length; i++) {
+					db.query("UPDATE "+config.get("oldTable")+" SET logged=1 WHERE player = '"+p[i].getName()+"';");
+				}
 			}
 		}
 		if (!disabled) {
@@ -190,7 +197,7 @@ public class Netstats extends JavaPlugin {
 					pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
 				}
 				if ((Boolean)config.get("trackPlaced")) {
-					pm.registerEvent(Event.Type.BLOCK_PLACED, blockListener, Event.Priority.Monitor, this);
+					pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Event.Priority.Monitor, this);
 				}
 			}
 
@@ -201,7 +208,7 @@ public class Netstats extends JavaPlugin {
 					pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Event.Priority.Monitor, this);
 				}
 				if ((Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
-					pm.registerEvent(Event.Type.ENTITY_DAMAGED, entityListener, Event.Priority.Monitor, this);
+					pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Event.Priority.Monitor, this);
 				}
 			}
 
