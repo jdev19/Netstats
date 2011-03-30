@@ -72,7 +72,7 @@ public class Netstats extends JavaPlugin {
 		}
 		players = getCanonPath(df+"/players");
 		logs = getCanonPath(df+"/logs");
-		lib = getCanonPath("./lib");
+		lib = getCanonPath(df+"/../../lib");
 		String configFile = getCanonFile(df+"/config.txt");
 		
 		// Check if players folder exists or create it

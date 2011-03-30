@@ -16,7 +16,7 @@ public class Downloader {
 			URLConnection con = (new URL(url)).openConnection();
 			con.setUseCaches(false);
 			InputStream in = con.getInputStream();
-			OutputStream out = new FileOutputStream(plugin.getCanonFile(plugin.lib+file));
+			OutputStream out = new FileOutputStream(plugin.getCanonFile(plugin.lib+'/'+file));
 			byte[] b = new byte[0x10000];
 			int cc = 0;
 			int count = 0;
