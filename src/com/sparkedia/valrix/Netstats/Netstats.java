@@ -16,7 +16,7 @@ public class Netstats extends JavaPlugin {
 	private NetPlayerListener playerListener;
 	private NetBlockListener blockListener;
 	private NetEntityListener entityListener;
-	public Logger log = Logger.getLogger("Minecraft");
+	public Logger log;
 	public LinkedHashMap<String, Object> config;
 	public HashMap<String, Property> users  = new HashMap<String, Property>(); // <Name, Propfile>
 	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
@@ -59,6 +59,7 @@ public class Netstats extends JavaPlugin {
 	}
 	
 	public void onEnable() {
+		log = this.getServer().getLogger();
 		// Log that the plugin has been enabled
 		PluginDescriptionFile pdf = this.getDescription();
 		pName = pdf.getName();

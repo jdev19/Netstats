@@ -19,14 +19,14 @@ public class NetPlayerListener extends PlayerListener {
 	private String players;
 	private HashMap<String, Property> users;
 	private LinkedHashMap<String, Object> config;
-	private int updateRate;
+	private int action;
 	
 	public NetPlayerListener(Netstats plugin) {
 		this.plugin = plugin;
 		this.players = plugin.players;
 		this.users = plugin.users;
 		this.config = plugin.config;
-		this.updateRate = (Integer)config.get("updateRate");
+		this.action = (Integer)config.get("actions");
 		this.db = plugin.db;
 	}
 
@@ -40,7 +40,7 @@ public class NetPlayerListener extends PlayerListener {
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
 				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-				plugin.actions.put(name, (updateRate/2));
+				plugin.actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
 			prop.setDouble("distance", prop.getDouble("distance")+distance);
@@ -77,7 +77,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop = users.get(name);
 		}
 		// There's already some user data, let's save it and refresh their join data
-		if (prop.getInt("broken") != 0 || prop.getInt("placed") != 0 || prop.getInt("deaths") != 0) {
+		if (prop.getInt("broken") > 0 || prop.getInt("placed") > 0 || prop.getInt("deaths") > 0 || prop.getDouble("distance") > 0) {
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
@@ -126,9 +126,11 @@ public class NetPlayerListener extends PlayerListener {
 		}
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+		prop.setLong("seen", now);
 		prop.save();
 		String sql = "";
 		// Store all data to database
+		sql += "seen="+now+", ";
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
@@ -143,6 +145,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("mobsKilled", 0);
 		prop.setInt("playersKilled", 0);
 		prop.setDouble("distance", 0);
+		prop.setLong("seen", 0);
 		prop.save();
 		users.remove(name);
 		if (plugin.actions.containsKey(name)) {
@@ -158,8 +161,10 @@ public class NetPlayerListener extends PlayerListener {
 		}
 		Property prop = users.get(name);
 		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
+		prop.setLong("seen", now);
 		String sql = "";
 		// Store all data to database
+		sql += "seen="+now+", ";
 		sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 		sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 		sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
@@ -174,6 +179,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("mobsKilled", 0);
 		prop.setInt("playersKilled", 0);
 		prop.setDouble("distance", 0);
+		prop.setLong("seen", 0);
 		prop.save();
 		users.remove(name);
 		if (plugin.actions.containsKey(name)) {

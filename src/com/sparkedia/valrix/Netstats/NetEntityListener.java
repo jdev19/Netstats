@@ -17,7 +17,7 @@ public class NetEntityListener extends EntityListener {
 	private HashMap<String, Property> users;
 	private HashMap<String, Integer> actions;
 	public LinkedHashMap<String, Object> config;
-	private int updateRate;
+	private int action;
 	
 	public NetEntityListener(Netstats plugin) {
 		this.plugin = plugin;
@@ -25,7 +25,7 @@ public class NetEntityListener extends EntityListener {
 		this.actions = plugin.actions;
 		this.players = plugin.players;
 		this.config = plugin.config;
-		this.updateRate = (Integer)config.get("updateRate");
+		this.action = (Integer)config.get("actions");
 	}
 	
 	public void onEntityDeath(EntityDeathEvent e) {
@@ -57,12 +57,12 @@ public class NetEntityListener extends EntityListener {
 						Property prop = users.get(name);
 						if (!users.containsKey(name)) {
 							users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-							actions.put(name, (updateRate/2));
+							actions.put(name, (action/2));
 						}
 						String sql = "";
 						int count = actions.get(name)+1;
 						prop.inc("mobsKilled");
-						if (count == updateRate) {
+						if (count == action) {
 							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 							prop.setLong("seen", now);
 							prop.save();
@@ -73,7 +73,7 @@ public class NetEntityListener extends EntityListener {
 							sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 							sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 							sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-							sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
+							sql += "seen="+now+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 							plugin.db.update(sql);
 							actions.put(name, 0);
 							// Reset everything (not time based) in property file since we just updated the DB
@@ -101,13 +101,13 @@ public class NetEntityListener extends EntityListener {
 						// Player killed a player, save it to player's stats file
 						if (!users.containsKey(name)) {
 							users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-							actions.put(name, (updateRate/2));
+							actions.put(name, (action/2));
 						}
 						Property prop = users.get(name);
 						String sql = "";
 						int count = actions.get(name)+1;
 						prop.inc("playersKilled");
-						if (count == updateRate) {
+						if (count == action) {
 							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
 							prop.setLong("seen", now);
 							prop.save();
@@ -118,7 +118,7 @@ public class NetEntityListener extends EntityListener {
 							sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 							sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 							sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-							sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
+							sql += "seen="+now+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 							plugin.db.update(sql);
 							actions.put(name, 0);
 							// Reset everything (not time based) in property file since we just updated the DB

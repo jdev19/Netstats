@@ -43,7 +43,7 @@ public final class NetRepeater implements Runnable {
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-				sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
+				sql += "seen="+now+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
 				db.update(sql);
 				actions.put(name, 0);
 				// Reset everything (not time based) in property file since we just updated the DB
@@ -81,7 +81,7 @@ public final class NetRepeater implements Runnable {
 			sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 			sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 			sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-			sql += "seen="+prop.getLong("seen")+", total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
+			sql += "seen="+now+", total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
 			db.update(sql);
 			actions.put(name, 0);
 			// Reset everything (not time based) in property file since we just updated the DB

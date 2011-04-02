@@ -18,7 +18,7 @@ public class NetBlockListener extends BlockListener {
 	protected String username;
 	protected String password;
 	protected Database db;
-	private int updateRate;
+	private int action;
 	
 	public NetBlockListener(Netstats plugin) {
 		this.plugin = plugin;
@@ -26,7 +26,7 @@ public class NetBlockListener extends BlockListener {
 		this.config = plugin.config;
 		this.users = plugin.users;
 		this.actions = plugin.actions;
-		this.updateRate = (Integer)config.get("updateRate");
+		this.action = (Integer)config.get("actions");
 		this.db = plugin.db;
 	}
 
@@ -37,12 +37,12 @@ public class NetBlockListener extends BlockListener {
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
 				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-				actions.put(name, (updateRate/2));
+				actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
 			int count = actions.get(name)+1;
 			prop.inc("broken"); // Add 1 to broken
-			if (count == updateRate) {
+			if (count == action) {
 				long now = System.currentTimeMillis();
 				String sql = "";
 				sql += "broken=broken+"+prop.getInt("broken")+", ";
@@ -51,7 +51,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-				sql += "seen="+prop.getLong("seen")+", ";
+				sql += "seen="+now+", ";
 				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total
@@ -83,12 +83,12 @@ public class NetBlockListener extends BlockListener {
 			if (!users.containsKey(name)) {
 				// Plugin is reset, make sure to re-set the property files
 				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-				actions.put(name, (updateRate/2));
+				actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
 			int count = actions.get(name)+1;
 			prop.inc("placed");
-			if (count == updateRate) {
+			if (count == action) {
 				long now = System.currentTimeMillis();
 				String sql = "";
 				sql += "placed=placed+"+prop.getInt("placed")+", ";
@@ -97,7 +97,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-				sql += "seen="+prop.getLong("seen")+", ";
+				sql += "seen="+now+", ";
 				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total

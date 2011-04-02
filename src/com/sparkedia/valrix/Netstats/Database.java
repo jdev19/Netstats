@@ -133,6 +133,7 @@ public final class Database {
 			sql = "UPDATE "+table+" SET "+sql;
 			String[] sqls = sql.split(";");
 			sql = sqls[0];
+			log.info("SQL Statement: "+sql); // TODO
 			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -206,6 +207,7 @@ public final class Database {
 			con = connection();
 			String[] sqls = sql.split(";");
 			sql = sqls[0];
+			log.info("SQL Statement: "+sql);
 			con.prepareStatement(sql).execute();
 		} catch (SQLException ex) {
 			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
