@@ -52,16 +52,9 @@ public final class ErrorLog {
 					String key = (String)me.getKey();
 					String val = me.getValue().toString();
 					
-					// If it starts with "com", it's a comment so write it as such
-					if (key.startsWith("com")) {
-						// Writing a comment to the file
-						bw.write("# "+val);
-						bw.newLine();
-					} else {
-						// Otherwise write the key and value pair as key=value
-						bw.write(key+": "+val);
-						bw.newLine();
-					}
+					// Otherwise write the key and value pair as key=value
+					bw.write(key+": "+val);
+					bw.newLine();
 				}
 			}
 		} catch (FileNotFoundException ex) {
@@ -91,7 +84,6 @@ public final class ErrorLog {
 	// Set output value as an integer
 	public void setInt(String key, int value) {
 		output.put(key, String.valueOf(value));
-		save();
 	}
 	
 	// Set output value as a double

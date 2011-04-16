@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public final class Database {
@@ -59,7 +58,7 @@ public final class Database {
 		ResultSet rs = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("SELECT total FROM "+table+" WHERE player=? LIMIT 1");
+			ps = con.prepareStatement("SELECT total FROM `"+table+"` WHERE player=? LIMIT 1");
 			ps.setString(1, name);
 			rs = ps.executeQuery();
 			has = rs.next();
@@ -73,6 +72,7 @@ public final class Database {
 				err.setString("Offending Statement", rs.getStatement().toString());
 			} catch (SQLException e) {
 			}
+			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return false;
 		} catch (ClassNotFoundException e) {
@@ -90,18 +90,19 @@ public final class Database {
 					con.close();
 				}
 			} catch (SQLException ex) {
-				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
+				log.severe('['+pName+"]: Failed to close database connection. Is it already closed?");
 			}
 		}
 		return has;
 	}
 	
+	// Function to rename the table
 	public void rename(String oldTable, String newTable) {
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
 			con = connection();
-			String sql = "RENAME TABLE "+oldTable+" TO "+newTable+';';
+			String sql = "RENAME TABLE `"+oldTable+"` TO `"+newTable+"`;";
 			ps = con.prepareStatement(sql);
 			ps.executeQuery();
 		} catch (SQLException ex) {
@@ -130,10 +131,9 @@ public final class Database {
 		PreparedStatement ps = null;
 		try {
 			con = connection();
-			sql = "UPDATE "+table+" SET "+sql;
+			sql = "UPDATE `"+table+"` SET "+sql;
 			String[] sqls = sql.split(";");
 			sql = sqls[0];
-			log.info("SQL Statement: "+sql); // TODO
 			ps = con.prepareStatement(sql);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -143,6 +143,7 @@ public final class Database {
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
 			err.setString("Offending Statement", sql);
+			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
@@ -168,7 +169,7 @@ public final class Database {
 		PreparedStatement ps = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("INSERT INTO "+table+" (id, player, enter, seen, total, logged, ip, broken, placed, deaths, mobskilled, playerskilled, joindate) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0, 0, 0, ?)");
+			ps = con.prepareStatement("INSERT INTO `"+table+"` (id, player, enter, seen, total, logged, ip, broken, placed, deaths, mobskilled, playerskilled, joindate) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0, 0, 0, ?)");
 			ps.setString(1, name);
 			ps.setLong(2, time);
 			ps.setLong(3, time);
@@ -181,6 +182,7 @@ public final class Database {
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
+			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
@@ -207,7 +209,6 @@ public final class Database {
 			con = connection();
 			String[] sqls = sql.split(";");
 			sql = sqls[0];
-			log.info("SQL Statement: "+sql);
 			con.prepareStatement(sql).execute();
 		} catch (SQLException ex) {
 			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
@@ -216,6 +217,40 @@ public final class Database {
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
 			err.setString("Offending Statement", sql);
+			err.setString("Stack Trace", ex.getStackTrace().toString());
+			err.save();
+			return;
+		} catch (ClassNotFoundException ex) {
+			log.severe('['+pName+"]: Database connector wasn't found. Make sure it's in your /lib/ folder.");
+			return;
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
+			}
+		}
+	}
+	
+	// Function to wipe the database
+	public void wipe(String table) {
+		Connection con = null;
+		String sql = "";
+		try {
+			con = connection();
+			// Set nearly everything back to 0 (zero)
+			sql = "UPDATE `"+table+"` SET enter=0, seen=0, total=0, logged=0, broken=0, placed=0, deaths=0, mobskilled=0, playerskilled=0, distance=0";
+			con.prepareStatement(sql).execute();
+		} catch (SQLException ex) {
+			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
+			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
+			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
+			err.setString(pName+" Version", plugin.getDescription().getVersion());
+			err.setString("MySQL Error", ex.toString());
+			err.setString("Offending Statement", sql);
+			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {
@@ -241,60 +276,59 @@ public final class Database {
 			// Return a list of the columns, we'll add the ones that aren't there
 			con = connection();
 			// Create the table if it doesn't exist
-			sql = "CREATE TABLE IF NOT EXISTS "+table+" (";
-			sql += "id int(11) NOT NULL AUTO_INCREMENT, ";
-			sql += "player varchar(50) NOT NULL, ";
-			sql += "enter bigint(20) NOT NULL DEFAULT '0', ";
-			sql += "seen bigint(20) NOT NULL DEFAULT '0', ";
-			sql += "total bigint(20) NOT NULL DEFAULT '0', ";
-			sql += "logged tinyint(1) NOT NULL DEFAULT '0', ";
-			sql += "ip varchar(40) NOT NULL, ";
-			sql += "broken int(11) NOT NULL DEFAULT '0', ";
-			sql += "placed int(11) NOT NULL DEFAULT '0', ";
-			sql += "deaths int(11) NOT NULL DEFAULT '0', ";
-			sql += "mobskilled int(11) NOT NULL DEFAULT '0', ";
-			sql += "playerskilled int(11) NOT NULL DEFAULT '0', ";
-			sql += "joindate bigint(20) NOT NULL DEFAULT '0', ";
-			sql += "distance double NOT NULL DEFAULT '0', ";
-			sql += "PRIMARY KEY (id)) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+			sql = "CREATE TABLE IF NOT EXISTS `"+table+"` ("+
+			"`id` int(11) NOT NULL AUTO_INCREMENT,"+
+			"`player` varchar(50) NOT NULL,"+
+			"`enter` bigint(20) NOT NULL DEFAULT '0',"+
+			"`seen` bigint(20) NOT NULL DEFAULT '0',"+
+			"`total` bigint(20) NOT NULL DEFAULT '0',"+
+			"`logged` tinyint(1) NOT NULL DEFAULT '0',"+
+			"`ip` varchar(40) NOT NULL,"+
+			"`broken` int(11) NOT NULL DEFAULT '0',"+
+			"`placed` int(11) NOT NULL DEFAULT '0',"+
+			"`deaths` int(11) NOT NULL DEFAULT '0',"+
+			"`mobskilled` int(11) NOT NULL DEFAULT '0',"+
+			"`playerskilled` int(11) NOT NULL DEFAULT '0',"+
+			"`joindate` bigint(20) NOT NULL DEFAULT '0',"+
+			"`distance` double NOT NULL DEFAULT '0',"+
+			"PRIMARY KEY (`id`)"+
+			") ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;";
 			ps = con.prepareStatement(sql);
 			ps.execute();
-			con = connection();
-			ps = con.prepareStatement("SELECT * FROM `"+table+"`");
-			rs = ps.executeQuery();
-			ResultSetMetaData rsmd = rs.getMetaData();
-			int count = rsmd.getColumnCount()+1;
-			// Add tables if they're not there
-			for (int i = 1; i < count; i++) {
-				if (i == (count-1) && rsmd.getColumnName(i).equals("deaths")) {
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `mobskilled` int(11) NOT NULL DEFAULT '0' AFTER `deaths`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
+			// Is Database charset in UTF-8? If not, we're gonna change it.
+			rs = con.prepareStatement("SHOW VARIABLES LIKE \"character_set_database\"").executeQuery();
+			int it = 1;
+			String cs = "";
+			String co = "";
+			while (rs.next()) {
+				if (rs.last()) {
+					cs = rs.getString(it);
 					break;
 				}
-				if (i == (count-1) && rsmd.getColumnName(i).equals("mobskilled")) {
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `playerskilled` int(11) NOT NULL DEFAULT '0' AFTER `mobskilled`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
-					break;
-				}
-				if (i == (count-1) && rsmd.getColumnName(i).equals("playerskilled")) {
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `joindate` bigint(20) NOT NULL DEFAULT '0' AFTER `playerskilled`").execute();
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
-					break;
-				}
-				if (i == (count-1) && rsmd.getColumnName(i).equals("joindate")) {
-					con.prepareStatement("ALTER TABLE `"+table+"` ADD `distance` double NOT NULL DEFAULT '0' AFTER `joindate`").execute();
-					break;
-				}
+				it++;
 			}
+			// Also make sure the collation is UTF-8
+			rs = con.prepareStatement("SHOW VARIABLES LIKE \"collation_database\"").executeQuery();
+			it = 1;
+			while (rs.next()) {
+				if (rs.last()) {
+					cs = rs.getString(it);
+					break;
+				}
+				it++;
+			}
+			if (!cs.equalsIgnoreCase("utf8") || !co.equalsIgnoreCase("utf8_general_ci")) {
+				con.prepareStatement("ALTER DATABASE `"+db+"` DEFAULT CHARSET 'utf8' COLLATE 'utf8_general_ci';").execute();
+				con.prepareStatement("ALTER TABLE `"+table+"` DEFAULT CHARSET 'utf8' COLLATE 'utf8_general_ci';").execute();
+			}
+			// ALTER END
 		} catch (SQLException ex) {
 			log.severe('['+pName+"]: Severe database error. Saving error log to "+logs);
 			ErrorLog err = new ErrorLog(plugin.getCanonFile(logs+"/NetErr_"+getDateTime()+".log"), plugin);
 			err.setString("CraftBukkit Version", plugin.getServer().getVersion());
 			err.setString(pName+" Version", plugin.getDescription().getVersion());
 			err.setString("MySQL Error", ex.toString());
+			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return;
 		} catch (ClassNotFoundException ex) {

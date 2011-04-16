@@ -172,7 +172,7 @@ public final class Property {
 	
 	// Check if the key no value
 	public boolean isEmpty(String key) {
-		if (properties.get(key).toString().isEmpty()) {
+		if (properties.get(key).toString().length() == 0) {
 			return true;
 		}
 		return false;

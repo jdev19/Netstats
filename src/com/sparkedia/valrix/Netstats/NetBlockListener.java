@@ -52,7 +52,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+now+", ";
-				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total
 				prop.setInt("broken", 0);
@@ -62,6 +62,7 @@ public class NetBlockListener extends BlockListener {
 				prop.setInt("playersKilled", 0);
 				prop.setDouble("distance", 0);
 				prop.setLong("seen", now);
+				prop.setLong("total", 0);
 				prop.save();
 				// Reset watched actions back to 0 (zero)
 				actions.put(name, 0);
@@ -98,7 +99,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+now+", ";
-				sql += "total="+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total
 				prop.setInt("broken", 0);
@@ -108,6 +109,7 @@ public class NetBlockListener extends BlockListener {
 				prop.setInt("playersKilled", 0);
 				prop.setDouble("distance", 0);
 				prop.setLong("seen", now);
+				prop.setLong("total", 0);
 				prop.save();
 				// Reset watched actions back to 0 (zero)
 				actions.put(name, 0);

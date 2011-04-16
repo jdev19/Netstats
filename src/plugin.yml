@@ -1,4 +1,8 @@
 name: Netstats
 main: com.sparkedia.valrix.Netstats.Netstats
-version: 3.9
+version: 4.0
 author: Valrix
+commands:
+  netstats:
+    description:
+    usage:

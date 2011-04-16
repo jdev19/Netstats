@@ -9,4 +9,8 @@
 # build files
 /target
 /bin
-/build
+/build/Netstats.jardesc
+/Netstats.jardesc
+
+/.gitignore
+/Debug.jardesc

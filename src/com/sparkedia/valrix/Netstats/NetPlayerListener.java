@@ -77,7 +77,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop = users.get(name);
 		}
 		// There's already some user data, let's save it and refresh their join data
-		if (prop.getInt("broken") > 0 || prop.getInt("placed") > 0 || prop.getInt("deaths") > 0 || prop.getDouble("distance") > 0) {
+		if (prop.getInt("broken") > 0 || prop.getInt("placed") > 0 || prop.getInt("deaths") > 0 || prop.getDouble("distance") > 0 || prop.getLong("total") > 0) {
 			sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 			sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
 			sql += (prop.getInt("deaths") > 0) ? "deaths=deaths+"+prop.getInt("deaths")+", " : "";
@@ -86,7 +86,7 @@ public class NetPlayerListener extends PlayerListener {
 			sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 			sql += "enter="+now+", seen="+now+", ";
 			sql += ((Boolean)config.get("trackIP")) ? "ip='"+ip+"', " : "";
-			sql += "total="+prop.getLong("total")+", logged=1 WHERE player='"+name+"';";
+			sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=1 WHERE player='"+name+"';";
 			db.update(sql);
 			prop.setInt("broken", 0);
 			prop.setInt("placed", 0);
@@ -96,6 +96,7 @@ public class NetPlayerListener extends PlayerListener {
 			prop.setDouble("distance", 0);
 			prop.setLong("enter", now);
 			prop.setLong("seen", now);
+			prop.setLong("total", 0);
 			prop.save();
 		} else {
 			// No previous data (good!), do everything like normal
@@ -125,9 +126,6 @@ public class NetPlayerListener extends PlayerListener {
 			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 		}
 		Property prop = users.get(name);
-		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-		prop.setLong("seen", now);
-		prop.save();
 		String sql = "";
 		// Store all data to database
 		sql += "seen="+now+", ";
@@ -137,7 +135,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
+		sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
@@ -146,6 +144,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("playersKilled", 0);
 		prop.setDouble("distance", 0);
 		prop.setLong("seen", 0);
+		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
 		if (plugin.actions.containsKey(name)) {
@@ -160,8 +159,6 @@ public class NetPlayerListener extends PlayerListener {
 			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
 		}
 		Property prop = users.get(name);
-		prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-		prop.setLong("seen", now);
 		String sql = "";
 		// Store all data to database
 		sql += "seen="+now+", ";
@@ -171,7 +168,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-		sql += "total="+prop.getLong("total")+", logged=0 WHERE player='"+name+"';";
+		sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
@@ -179,7 +176,8 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setInt("mobsKilled", 0);
 		prop.setInt("playersKilled", 0);
 		prop.setDouble("distance", 0);
-		prop.setLong("seen", 0);
+		prop.setLong("seen", now);
+		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
 		if (plugin.actions.containsKey(name)) {

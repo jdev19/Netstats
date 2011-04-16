@@ -52,6 +52,7 @@ public class NetEntityListener extends EntityListener {
 					int life = v.getHealth();
 					int damage = sub.getDamage();
 					if ((life-damage) <= 0) {
+						v.remove();
 						String name = d.getName();
 						// Player killed a monster, save it to player's stats file
 						Property prop = users.get(name);
@@ -63,9 +64,6 @@ public class NetEntityListener extends EntityListener {
 						int count = actions.get(name)+1;
 						prop.inc("mobsKilled");
 						if (count == action) {
-							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-							prop.setLong("seen", now);
-							prop.save();
 							// Update database
 							sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 							sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
@@ -73,7 +71,7 @@ public class NetEntityListener extends EntityListener {
 							sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 							sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 							sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-							sql += "seen="+now+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
+							sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 							plugin.db.update(sql);
 							actions.put(name, 0);
 							// Reset everything (not time based) in property file since we just updated the DB
@@ -83,6 +81,8 @@ public class NetEntityListener extends EntityListener {
 							prop.setInt("mobsKilled", 0);
 							prop.setInt("playersKilled", 0);
 							prop.setDouble("distance", 0);
+							prop.setLong("seen", now);
+							prop.setLong("total", 0);
 							prop.save();
 						} else {
 							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
@@ -97,6 +97,7 @@ public class NetEntityListener extends EntityListener {
 					int life = v.getHealth();
 					int damage = sub.getDamage();
 					if ((life-damage) <= 0) {
+						v.remove();
 						String name = d.getName();
 						// Player killed a player, save it to player's stats file
 						if (!users.containsKey(name)) {
@@ -108,9 +109,6 @@ public class NetEntityListener extends EntityListener {
 						int count = actions.get(name)+1;
 						prop.inc("playersKilled");
 						if (count == action) {
-							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
-							prop.setLong("seen", now);
-							prop.save();
 							// Update database
 							sql += (prop.getInt("broken") > 0) ? "broken=broken+"+prop.getInt("broken")+", " : "";
 							sql += (prop.getInt("placed") > 0) ? "placed=placed+"+prop.getInt("placed")+", " : "";
@@ -118,7 +116,7 @@ public class NetEntityListener extends EntityListener {
 							sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 							sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 							sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-							sql += "seen="+now+", total="+prop.getLong("total")+" WHERE player='"+name+"';";
+							sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
 							plugin.db.update(sql);
 							actions.put(name, 0);
 							// Reset everything (not time based) in property file since we just updated the DB
@@ -128,6 +126,8 @@ public class NetEntityListener extends EntityListener {
 							prop.setInt("mobsKilled", 0);
 							prop.setInt("playersKilled", 0);
 							prop.setDouble("distance", 0);
+							prop.setLong("seen", now);
+							prop.setLong("total", 0);
 							prop.save();
 						} else {
 							prop.setLong("total", prop.getLong("total")+(now-prop.getLong("seen")));
