@@ -200,9 +200,8 @@ public class Netstats extends JavaPlugin {
 				// First, the plugin is either reloading or is starting up, so set all users to being logged off
 				db.query("UPDATE "+config.get("oldTable")+" SET logged=0");
 				// If the plugin is just reloading, we need to set all online players back to being online
-				Player[] p = getServer().getOnlinePlayers();
-				for (int i = 0; i < p.length; i++) {
-					db.query("UPDATE `"+config.get("oldTable")+"` SET logged=1 WHERE player = '"+p[i].getName()+"';");
+				for (Player p : getServer().getOnlinePlayers()) {
+					db.query("UPDATE `"+config.get("oldTable")+"` SET logged=1 WHERE player = '"+p.getName()+"';");
 				}
 			}
 		}
@@ -212,9 +211,9 @@ public class Netstats extends JavaPlugin {
 
 			// Register player events
 			pl = new NetPlayerListener(this);
-			pm.registerEvent(Event.Type.PLAYER_JOIN, pl, Event.Priority.Normal, this);
-			pm.registerEvent(Event.Type.PLAYER_QUIT, pl, Event.Priority.Normal, this);
-			pm.registerEvent(Event.Type.PLAYER_KICK, pl, Event.Priority.Normal, this);
+			pm.registerEvent(Event.Type.PLAYER_JOIN, pl, Event.Priority.Lowest, this);
+			pm.registerEvent(Event.Type.PLAYER_QUIT, pl, Event.Priority.Lowest, this);
+			pm.registerEvent(Event.Type.PLAYER_KICK, pl, Event.Priority.Lowest, this);
 			
 			if ((Boolean)config.get("trackDistanceWalked")) {
 				pm.registerEvent(Event.Type.PLAYER_MOVE, pl, Event.Priority.Normal, this);
@@ -267,8 +266,8 @@ public class Netstats extends JavaPlugin {
 								if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
 									// netstats wipe <pass>
 									// First save all players and kick them
+									getServer().savePlayers();
 									for (Player p : getServer().getOnlinePlayers()) {
-										p.saveData();
 										getServer().dispatchCommand(sender, "kick "+p.getName());
 									}
 									// Then wipe the database
@@ -292,8 +291,8 @@ public class Netstats extends JavaPlugin {
 						} else if (args.length == 2 && args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
 							// netstats wipe <pass>
 							// First save all players and kick them
+							getServer().savePlayers();
 							for (Player p : getServer().getOnlinePlayers()) {
-								p.saveData();
 								getServer().dispatchCommand(sender, "kick "+p.getName());
 							}
 							// Then wipe the database
