@@ -30,6 +30,7 @@ public class NetPlayerListener extends PlayerListener {
 		this.db = plugin.db;
 	}
 
+    @Override
 	public void onPlayerMove(PlayerMoveEvent e) {
 		if (!e.isCancelled()) {
 			Player player = e.getPlayer();
@@ -47,6 +48,7 @@ public class NetPlayerListener extends PlayerListener {
 		}
 	}
 	
+    @Override
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		long now = System.currentTimeMillis();
 		InetSocketAddress IP = e.getPlayer().getAddress();
@@ -119,6 +121,7 @@ public class NetPlayerListener extends PlayerListener {
 		}
 	}
 	
+    @Override
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();

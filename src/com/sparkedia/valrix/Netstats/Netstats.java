@@ -72,7 +72,13 @@ public class Netstats extends JavaPlugin {
 	public void onDisable() {
 		if (!users.isEmpty()) {
 			// There are still users logged in! Quick, save their data first!
+                    try{
 			runner.out();
+                    }catch(Exception e){
+                        // just in case there's another error, set all users to logged=false
+                        db.update("logged=0");
+                        //db.query("UPDATE "+config.get("oldTable")+" SET logged=0");
+                    }
 		}
 		log.info('['+pName+"] v"+getDescription().getVersion()+" has been disabled.");
 	}
