@@ -30,6 +30,7 @@ public class NetBlockListener extends BlockListener {
 		this.db = plugin.db;
 	}
 
+	@Override
 	public void onBlockBreak(BlockBreakEvent e) {
 		// If the event wasn't canceled by another plugin
 		if (!e.isCancelled()) {
@@ -77,6 +78,7 @@ public class NetBlockListener extends BlockListener {
 		}
 	}
 	
+	@Override
 	public void onBlockPlace(BlockPlaceEvent e) {
 		// If the event wasn't canceled by another plugin
 		if (!e.isCancelled()) {

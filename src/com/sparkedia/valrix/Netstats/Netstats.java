@@ -38,22 +38,22 @@ public class Netstats extends JavaPlugin {
 	// OS-specific path to directory
 	public String getCanonPath(String d) {
 		String c = "";
+		File D = new File(d);
 		try {
-			c = new File(d).getCanonicalPath();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			D.mkdirs();
+			c = D.getCanonicalPath();
+		} catch (IOException e) {}
 		return c;
 	}
 	
 	// OS-specific path to file
 	public String getCanonFile(String f) {
 		String c = "";
+		File F = new File(f);
 		try {
-			c = new File(f).getCanonicalFile().toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			new File(F.getPath()).mkdirs();
+			c = F.getCanonicalFile().toString();
+		} catch (IOException e) {}
 		return c;
 	}
 	
@@ -67,22 +67,23 @@ public class Netstats extends JavaPlugin {
             s.append(c.charAt(p));
         }
         return s.toString();
-    }
-	
+	}
+
+	@Override
 	public void onDisable() {
 		if (!users.isEmpty()) {
 			// There are still users logged in! Quick, save their data first!
-                    try{
-			runner.out();
-                    }catch(Exception e){
-                        // just in case there's another error, set all users to logged=false
-                        db.update("logged=0");
-                        //db.query("UPDATE "+config.get("oldTable")+" SET logged=0");
-                    }
+			try {
+				runner.out();
+			} catch(Exception e) {
+				// just in case there's another error, set all users to logged=false
+				db.update("logged=0");
+			}
 		}
-		log.info('['+pName+"] v"+getDescription().getVersion()+" has been disabled.");
+		log.info('['+pName+"] has been disabled.");
 	}
 	
+	@Override
 	public void onEnable() {
 		log = getServer().getLogger();
 		// Log that the plugin has been enabled
@@ -90,35 +91,14 @@ public class Netstats extends JavaPlugin {
 		pName = pdf.getName();
 		
 		df = getCanonPath(getDataFolder().toString());
-		
-		// First make sure the plugin data folder even exists
-		if (!(new File(df)).isDirectory()) {
-			new File(df).mkdir();
-		}
 		players = getCanonPath(df+"/players");
 		logs = getCanonPath(df+"/logs");
 		lib = getCanonPath(df+"/../../lib");
 		String configFile = getCanonFile(df+"/config.txt");
 		
-		// Check if players folder exists or create it
-		if (!(new File(players).isDirectory())) {
-			new File(players).mkdir();
-		}
-		
-		// Make the directory for error logs if it doesn't exist
-		if (!(new File(logs).isDirectory())) {
-			new File(logs).mkdir();
-		}
-		
-		// Check if the /lib/ folder exists, this check will hopefully not be needed later
-		if (!(new File(lib).isDirectory())) {
-			new File(lib).mkdir();
-		}
-		
 		// Check if MySQL connector exists, if not then download and install it
-		if (!(new File(getCanonFile(lib+"/mysql-connector-java-bin.jar"))).exists()) {
+		if (!(new File(getCanonFile(lib+"/mysql-connector-java-bin.jar"))).exists())
 			new Downloader("http://dl.dropbox.com/u/1449544/deps/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
-		}
 		
 		//Does config exist, if not then make a new one and add defaults
 		if (!(new File(configFile).exists())) {
@@ -134,12 +114,13 @@ public class Netstats extends JavaPlugin {
 			conf.setString("database", "");
 			conf.setString("username", "");
 			conf.setString("password", "");
+			conf.setString("#0", "Both oldTable and newTable are optional");
 			conf.setString("oldTable", "");
 			conf.setString("newTable", ""); // Only one that truly matters, oldTable is reference
 			conf.setInt("actions", 32);
 			conf.setInt("updateRate", 90); // Time in seconds
 			// Now set option tracking options
-			conf.setString("#0", "Optional things to track. True = track, False = don't track");
+			conf.setString("#1", "Optional things to track. True = track, False = don't track");
 			conf.setBoolean("trackIP", true);
 			conf.setBoolean("trackBroken", true);
 			conf.setBoolean("trackPlaced", true);
@@ -165,11 +146,12 @@ public class Netstats extends JavaPlugin {
 				tmp.put("database", conf.getString("database"));
 				tmp.put("username", conf.getString("username"));
 				tmp.put("password", conf.getString("password"));
+				tmp.put("#0", "Both oldTable and newTable are optional");
 				tmp.put("oldTable", conf.getString("oldTable"));
 				tmp.put("newTable", conf.getString("newTable"));
 				tmp.put("actions", conf.getInt("actions"));
 				tmp.put("updateRate", conf.getInt("updateRate"));
-				tmp.put("#0", "Optional things to track. True = track, False = don't track");
+				tmp.put("#1", "Optional things to track. True = track, False = don't track");
 				tmp.put("trackIP", conf.getBoolean("trackIP"));
 				tmp.put("trackBroken", conf.getBoolean("trackBroken"));
 				tmp.put("trackPlaced", conf.getBoolean("trackPlaced"));
@@ -178,10 +160,8 @@ public class Netstats extends JavaPlugin {
 				tmp.put("trackPlayerKills", conf.getBoolean("trackPlayerKills"));
 				tmp.put("trackDistanceWalked", conf.getBoolean("trackDistanceWalked"));
 				// Check if old config matches new config format
-				if (!conf.match(tmp)) {
-					// They don't match, rebuild config
+				if (!conf.match(tmp))
 					conf.rebuild(tmp);
-				}
 				String pass = randStr(10);
 				conf.setString("wipePass", pass);
 				conf.save();
@@ -198,16 +178,17 @@ public class Netstats extends JavaPlugin {
 					config.put("newTable", newTable);
 					config.put("oldTable", newTable);
 					conf.setString("oldTable", newTable);
+					conf.setString("newTable", "");
 					conf.save();
 				} else {
 					config.put("oldTable", "netstats");
 				}
 				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("oldTable"), this);
 				// First, the plugin is either reloading or is starting up, so set all users to being logged off
-				db.query("UPDATE "+config.get("oldTable")+" SET logged=0");
+				db.update("logged=0");
 				// If the plugin is just reloading, we need to set all online players back to being online
 				for (Player p : getServer().getOnlinePlayers()) {
-					db.query("UPDATE `"+config.get("oldTable")+"` SET logged=1 WHERE player = '"+p.getName()+"';");
+					db.update("logged=1 WHERE player = '"+p.getName()+"';");
 				}
 			}
 		}
@@ -222,7 +203,7 @@ public class Netstats extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_KICK, pl, Event.Priority.Lowest, this);
 			
 			if ((Boolean)config.get("trackDistanceWalked")) {
-				pm.registerEvent(Event.Type.PLAYER_MOVE, pl, Event.Priority.Normal, this);
+				pm.registerEvent(Event.Type.PLAYER_MOVE, pl, Event.Priority.Monitor, this);
 			}
 
 			// Register block events
@@ -261,58 +242,50 @@ public class Netstats extends JavaPlugin {
 						String name = player.getName();
 						// Only allow the actual use of the commands to the admin defined in the config
 						if (name.equals(config.get("admin").toString().trim())) {
-							if (args.length == 1) {
-								// /netstats pass
-								if (args[0].equalsIgnoreCase("pass")) {
-									player.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
-								}
+							switch (args.length) {
+							case 1:
+								if (args[0].equalsIgnoreCase("pass")) player.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
 								return true;
-							} else if (args.length == 2) {
-								// /netstats wipe <pass>
+							case 2:
 								if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
 									// netstats wipe <pass>
-									// First save all players and kick them
 									getServer().savePlayers();
 									for (Player p : getServer().getOnlinePlayers()) {
 										getServer().dispatchCommand(sender, "kick "+p.getName());
+										new File(players+p.getName()+".stats").delete();
 									}
-									// Then wipe the database
 									db.wipe(config.get("oldTable").toString());
-									// Finally delete each player's .stats file
-									for (File f : new File(players).listFiles()) {
-										f.delete();
-									}
 									log.info('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
 									getServer().reload();
-									return true;
 								}
+								return true;
+							default:
+								return false;
 							}
 						}
-					}
-					if (sender instanceof ConsoleCommandSender) {
-						if (args.length == 1 && args[0].equalsIgnoreCase("pass")) {
-							// netstats pass
-							sender.sendMessage('['+pName+"]: "+ChatColor.DARK_PURPLE+"Data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
+					} else if (sender instanceof ConsoleCommandSender) {
+						switch (args.length) {
+						case 1:
+							if (args[0].equalsIgnoreCase("pass")) sender.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
 							return true;
-						} else if (args.length == 2 && args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
-							// netstats wipe <pass>
-							// First save all players and kick them
-							getServer().savePlayers();
-							for (Player p : getServer().getOnlinePlayers()) {
-								getServer().dispatchCommand(sender, "kick "+p.getName());
+						case 2:
+							if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
+								// netstats wipe <pass>
+								getServer().savePlayers();
+								for (Player p : getServer().getOnlinePlayers()) {
+									getServer().dispatchCommand(sender, "kick "+p.getName());
+									new File(players+p.getName()+".stats").delete();
+								}
+								db.wipe(config.get("oldTable").toString());
+								log.info('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
+								getServer().reload();
 							}
-							// Then wipe the database
-							db.wipe(config.get("oldTable").toString());
-							// Finally delete each player's .stats file
-							for (File f : new File(players).listFiles()) {
-								f.delete();
-							}
-							sender.sendMessage('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
-							getServer().reload();
 							return true;
+						default:
+							return false;
 						}
 					}
-					return true;
+					return false;
 				}
 			});
 			// END commands

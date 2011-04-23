@@ -125,9 +125,8 @@ public class NetPlayerListener extends PlayerListener {
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
-		if (!users.containsKey(name)) {
+		if (!users.containsKey(name))
 			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-		}
 		Property prop = users.get(name);
 		String sql = "";
 		// Store all data to database
@@ -150,17 +149,15 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
-		if (plugin.actions.containsKey(name)) {
+		if (plugin.actions.containsKey(name))
 			plugin.actions.remove(name);
-		}
 	}
 	
 	public void onPlayerKick(PlayerEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
-		if (!users.containsKey(name)) {
+		if (!users.containsKey(name))
 			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
-		}
 		Property prop = users.get(name);
 		String sql = "";
 		// Store all data to database
@@ -183,8 +180,7 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
-		if (plugin.actions.containsKey(name)) {
+		if (plugin.actions.containsKey(name))
 			plugin.actions.remove(name);
-		}
 	}
 }

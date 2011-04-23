@@ -70,8 +70,7 @@ public final class Database {
 			err.setString("MySQL Error", ex.toString());
 			try {
 				err.setString("Offending Statement", rs.getStatement().toString());
-			} catch (SQLException e) {
-			}
+			} catch (SQLException e) {}
 			err.setString("Stack Trace", ex.getStackTrace().toString());
 			err.save();
 			return false;
@@ -80,15 +79,9 @@ public final class Database {
 			return false;
 		} finally {
 			try	{
-				if (rs != null) {
-					rs.close();
-				}
-				if (ps != null) {
-					ps.close();
-				}
-				if (con != null) {
-					con.close();
-				}
+				if (rs != null) rs.close();
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection. Is it already closed?");
 			}
@@ -113,12 +106,8 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (ps != null) {
-					ps.close();
-				}
-				if (con != null) {
-					con.close();
-				}
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
@@ -151,12 +140,8 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (ps != null) {
-					ps.close();
-				}
-				if (con != null) {
-					con.close();
-				}
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
@@ -169,12 +154,7 @@ public final class Database {
 		PreparedStatement ps = null;
 		try	{
 			con = connection();
-			ps = con.prepareStatement("INSERT INTO `"+table+"` (id, player, enter, seen, total, logged, ip, broken, placed, deaths, mobskilled, playerskilled, joindate) VALUES(null, ?, ?, ?, 0, 1, ?, 0, 0, 0, 0, 0, ?)");
-			ps.setString(1, name);
-			ps.setLong(2, time);
-			ps.setLong(3, time);
-			ps.setString(4, ip);
-			ps.setLong(5, time);
+			ps = con.prepareStatement("INSERT INTO `"+table+"` (id, player, enter, seen, total, logged, ip, broken, placed, deaths, mobskilled, playerskilled, joindate) VALUES(null, '"+name+"', '"+time+"', '"+time+"', '0', '1', '"+ip+"', '0', '0', '0', '0', '0', '"+time+"')");
 			ps.executeUpdate();
 		} catch (SQLException ex) {
 			log.severe('['+pName+"]: Failed to register user to database. Saving error log to "+logs);
@@ -190,12 +170,8 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (ps != null) {
-					ps.close();
-				}
-				if (con != null) {
-					con.close();
-				}
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
@@ -225,9 +201,7 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (con != null) {
-					con.close();
-				}
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
@@ -258,9 +232,7 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (con != null) {
-					con.close();
-				}
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}
@@ -336,15 +308,9 @@ public final class Database {
 			return;
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (ps != null) {
-					ps.close();
-				}
-				if (con != null) {
-					con.close();
-				}
+				if (rs != null) rs.close();
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException ex) {
 				log.severe('['+pName+"]: Failed to close database connection connection. Is it already closed?");
 			}

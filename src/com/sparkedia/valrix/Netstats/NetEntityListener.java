@@ -40,12 +40,17 @@ public class NetEntityListener extends EntityListener {
             if (!users.containsKey(name)) {
                 users.put(name, new Property(plugin.getCanonFile(players + '/' + name + ".stats"), plugin));
             }
+            // It was a player who died, add that to their stats
             users.get(name).inc("deaths");
         }
+        // An entity just died, if it was attacked (didn't fall, drown, or burn to death)
         if (attacks.containsKey(entity.getEntityId())) {
+        	// and was attacked within a half-second ago
             if (attacks.get(entity.getEntityId()).attackTimeAgo() <= damageTimeThreshold) {
+            	// give killer credit for the kill
                 entDeath(entity, attacks.get(entity.getEntityId()).getAttacker());
             }
+            // remove all recorded attacks to this entity (garbage collection)
             attacks.remove(entity.getEntityId());
         }
     }
@@ -54,12 +59,15 @@ public class NetEntityListener extends EntityListener {
     public void onEntityDamage(EntityDamageEvent e) {
         if (!e.isCancelled()) {
             if (e instanceof EntityDamageByEntityEvent) {
+            	// Entity was attacked by another entity physically
                 Entity attacker = ((EntityDamageByEntityEvent) e).getDamager();
                 entDamage(e.getEntity(), attacker);
             } else if (e instanceof EntityDamageByProjectileEvent) {
+            	// Entity was shot by an arrow
                 Entity attacker = ((EntityDamageByProjectileEvent) e).getDamager();
                 entDamage(e.getEntity(), attacker);
             } else {
+            	// Entity fell, was burned, is drowning, or suffocating
                 newAttack(e.getEntity(), null);
             }
         }
@@ -165,7 +173,6 @@ public class NetEntityListener extends EntityListener {
     }
 
     public class PlayerAttack {
-
         long lastAttackTime;
         Player lastAttackPlayer;
 

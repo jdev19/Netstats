@@ -1,6 +1,6 @@
 name: Netstats
 main: com.sparkedia.valrix.Netstats.Netstats
-version: 4.0
+version: 4.1
 author: Valrix
 commands:
   netstats:

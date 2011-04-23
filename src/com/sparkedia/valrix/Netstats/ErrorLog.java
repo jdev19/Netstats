@@ -25,9 +25,7 @@ public final class ErrorLog {
 		this.log = plugin.log;
 		this.file = file;
 		
-		if (!(new File(file).exists())) {
-			save();
-		}
+		if (!(new File(file).exists())) save();
 	}
 	
 	// Save data from LinkedHashMap to file
