@@ -1,4 +1,4 @@
-package com.sparkedia.valrix.Netstats;
+package com.sparkedia.valrix.netstats;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

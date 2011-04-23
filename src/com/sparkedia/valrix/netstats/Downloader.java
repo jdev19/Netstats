@@ -1,4 +1,4 @@
-package com.sparkedia.valrix.Netstats;
+package com.sparkedia.valrix.netstats;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
