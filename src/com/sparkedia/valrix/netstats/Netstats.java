@@ -51,7 +51,7 @@ public class Netstats extends JavaPlugin {
 		String c = "";
 		File F = new File(f);
 		try {
-			new File(F.getPath()).mkdirs();
+			new File(F.getParent()).mkdirs();
 			c = F.getCanonicalFile().toString();
 		} catch (IOException e) {}
 		return c;
