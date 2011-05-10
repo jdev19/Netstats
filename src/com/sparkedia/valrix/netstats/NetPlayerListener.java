@@ -40,7 +40,7 @@ public class NetPlayerListener extends PlayerListener {
 			double distance = to.distance(from);
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+				users.put(name, new Property(players+'/'+name+".stats", plugin));
 				plugin.actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
@@ -50,14 +50,14 @@ public class NetPlayerListener extends PlayerListener {
 	
     @Override
 	public void onPlayerJoin(PlayerJoinEvent e) {
-		long now = System.currentTimeMillis();
+		long now = System.currentTimeMillis(); // In seconds
 		InetSocketAddress IP = e.getPlayer().getAddress();
 		String[] ips = IP.toString().split("/");
 		String ip = ips[1].replace(":"+IP.getPort(), "");
 		String name = e.getPlayer().getName();
 		Property prop;
 		String sql = "";
-		String statfile = plugin.getCanonFile(players+'/'+name+".stats");
+		String statfile = players+'/'+name+".stats";
 		// Use previous format of storing a user and their propfile to users
 		if (!(new File(statfile)).exists()) {
 			users.put(name, new Property(statfile, plugin));
@@ -88,7 +88,7 @@ public class NetPlayerListener extends PlayerListener {
 			sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 			sql += "enter="+now+", seen="+now+", ";
 			sql += ((Boolean)config.get("trackIP")) ? "ip='"+ip+"', " : "";
-			sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=1 WHERE player='"+name+"';";
+			sql += "total=total+"+((prop.getLong("total")+(now-prop.getLong("seen")))/1000)+", logged=1 WHERE player='"+name+"';";
 			db.update(sql);
 			prop.setInt("broken", 0);
 			prop.setInt("placed", 0);
@@ -125,8 +125,7 @@ public class NetPlayerListener extends PlayerListener {
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
-		if (!users.containsKey(name))
-			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+		if (!users.containsKey(name)) users.put(name, new Property(players+'/'+name+".stats", plugin));
 		Property prop = users.get(name);
 		String sql = "";
 		// Store all data to database
@@ -137,7 +136,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-		sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=0 WHERE player='"+name+"';";
+		sql += "seen="+now+", total=total+"+((prop.getLong("total")+(now-prop.getLong("seen")))/1000)+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
@@ -149,15 +148,13 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
-		if (plugin.actions.containsKey(name))
-			plugin.actions.remove(name);
+		if (plugin.actions.containsKey(name)) plugin.actions.remove(name);
 	}
 	
 	public void onPlayerKick(PlayerEvent e) {
 		long now = System.currentTimeMillis();
 		String name = e.getPlayer().getName();
-		if (!users.containsKey(name))
-			users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+		if (!users.containsKey(name)) users.put(name, new Property(players+'/'+name+".stats", plugin));
 		Property prop = users.get(name);
 		String sql = "";
 		// Store all data to database
@@ -168,7 +165,7 @@ public class NetPlayerListener extends PlayerListener {
 		sql += (prop.getInt("mobsKilled") > 0) ? "mobskilled=mobskilled+"+prop.getInt("mobsKilled")+", " : "";
 		sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 		sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
-		sql += "seen="+now+", total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+", logged=0 WHERE player='"+name+"';";
+		sql += "seen="+now+", total=total+"+((prop.getLong("total")+(now-prop.getLong("seen")))/1000)+", logged=0 WHERE player='"+name+"';";
 		db.update(sql);
 		prop.setInt("broken", 0);
 		prop.setInt("placed", 0);
@@ -180,7 +177,6 @@ public class NetPlayerListener extends PlayerListener {
 		prop.setLong("total", 0);
 		prop.save();
 		users.remove(name);
-		if (plugin.actions.containsKey(name))
-			plugin.actions.remove(name);
+		if (plugin.actions.containsKey(name)) plugin.actions.remove(name);
 	}
 }

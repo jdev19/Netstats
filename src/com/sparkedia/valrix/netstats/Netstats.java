@@ -30,32 +30,11 @@ public class Netstats extends JavaPlugin {
 	public String df; // Data Folder
 	public String players;
 	public String logs;
-	public String lib;
 	public Database db;
+	public Property conf;
 	private NetRepeater runner;
 	private Boolean disabled = false;
-	
-	// OS-specific path to directory
-	public String getCanonPath(String d) {
-		String c = "";
-		File D = new File(d);
-		try {
-			D.mkdirs();
-			c = D.getCanonicalPath();
-		} catch (IOException e) {}
-		return c;
-	}
-	
-	// OS-specific path to file
-	public String getCanonFile(String f) {
-		String c = "";
-		File F = new File(f);
-		try {
-			new File(F.getParent()).mkdirs();
-			c = F.getCanonicalFile().toString();
-		} catch (IOException e) {}
-		return c;
-	}
+	public String table = ""; // Active table
 	
 	// Function to generate a random string from the given charset based on the time
 	private String randStr(int l) {
@@ -67,6 +46,19 @@ public class Netstats extends JavaPlugin {
             s.append(c.charAt(p));
         }
         return s.toString();
+	}
+	
+	private void reload() {
+		getPluginLoader().disablePlugin(this);
+		getPluginLoader().enablePlugin(this);
+	}
+	
+	private void mkDirs(String d) {
+		for (String f : d.split(" ")) {
+			if (!new File(f).exists()) {
+				new File(f).mkdir();
+			}
+		}
 	}
 
 	@Override
@@ -90,15 +82,15 @@ public class Netstats extends JavaPlugin {
 		PluginDescriptionFile pdf = getDescription();
 		pName = pdf.getName();
 		
-		df = getCanonPath(getDataFolder().toString());
-		players = getCanonPath(df+"/players");
-		logs = getCanonPath(df+"/logs");
-		lib = getCanonPath(df+"/../../lib");
-		String configFile = getCanonFile(df+"/config.txt");
+		df = getDataFolder().toString();
+		players = df+"/players";
+		logs = df+"/logs";
+		String configFile = df+"/config.txt";
+		mkDirs(df+' '+players+' '+logs);
 		
 		// Check if MySQL connector exists, if not then download and install it
-		if (!(new File(getCanonFile(lib+"/mysql-connector-java-bin.jar"))).exists())
-			new Downloader("http://dl.dropbox.com/u/1449544/deps/mysql-connector-java-bin.jar", "mysql-connector-java-bin.jar", this);
+		//if (!(new File(lib+"/mysql-connector-java-bin.jar")).exists())
+			//new Downloader("", "", this);
 		
 		//Does config exist, if not then make a new one and add defaults
 		if (!(new File(configFile).exists())) {
@@ -107,7 +99,7 @@ public class Netstats extends JavaPlugin {
 			} catch (IOException e) {
 				log.severe('['+pName+"]: Couldn't create config file. Make sure your plugins directory has write access.");
 			}
-			Property conf = new Property(configFile, this);
+			conf = new Property(configFile, this);
 			conf.setString("admin", "");
 			conf.setString("wipePass", randStr(10));
 			conf.setString("host", "");
@@ -133,8 +125,8 @@ public class Netstats extends JavaPlugin {
 			disabled = true;
 		} else {
 			// File exists, check if the database info is there
-			Property conf = new Property(configFile, this);
-			if (conf.isEmpty("host") || conf.isEmpty("database") || conf.isEmpty("username")) {
+			conf = new Property(configFile, this);
+			if (conf.isEmpty("host") || conf.isEmpty("username")) {
 				log.severe('['+pName+"] Your database settings aren't set. Disabling "+pName+'.');
 				disabled = true;
 			} else {
@@ -159,9 +151,10 @@ public class Netstats extends JavaPlugin {
 				tmp.put("trackMonsterKills", conf.getBoolean("trackMonsterKills"));
 				tmp.put("trackPlayerKills", conf.getBoolean("trackPlayerKills"));
 				tmp.put("trackDistanceWalked", conf.getBoolean("trackDistanceWalked"));
+				tmp.put("revised", ((conf.keyExists("revised")) ? conf.getBoolean("revised") : false));
 				// Check if old config matches new config format
-				if (!conf.match(tmp))
-					conf.rebuild(tmp);
+				if (!conf.match(tmp)) conf.rebuild(tmp);
+				// Generate wipe password
 				String pass = randStr(10);
 				conf.setString("wipePass", pass);
 				conf.save();
@@ -169,31 +162,44 @@ public class Netstats extends JavaPlugin {
 				// Now config = tmp since it'll always be up-to-date
 				config = tmp;
 				// If newTable isn't empty
+				String oldTable;
 				if (!conf.isEmpty("newTable")) {
 					// If oldTable is empty, use netstats otherwise use oldTable to be renamed
-					String oldTable = (conf.isEmpty("oldTable")) ? "netstats" : conf.getString("oldTable");
-					String newTable = (conf.getString("newTable").equalsIgnoreCase("netstats")) ? "" : conf.getString("newTable");
-					db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), oldTable, this);
-					db.rename(oldTable, newTable);
-					config.put("newTable", newTable);
-					config.put("oldTable", newTable);
-					conf.setString("oldTable", newTable);
+					oldTable = (conf.isEmpty("oldTable")) ? "netstats" : conf.getString("oldTable");
+					String newTable = (conf.getString("newTable").equalsIgnoreCase("netstats") && !oldTable.equalsIgnoreCase("netstats")) ? "netstats" : conf.getString("newTable");
+					table = newTable;
+					db = new Database(conf.getString("host"), conf.getString("database"), conf.getString("username"), conf.getString("password"), this);
+					db.queries("CREATE TABLE `"+table+"` LIKE `"+oldTable+"`;INSERT INTO `"+table+"` SELECT * FROM `"+oldTable+"`;DROP TABLE `"+oldTable+"`;");
+					config.put("newTable", table);
+					config.put("oldTable", ((table.equalsIgnoreCase("netstats")) ? "" : table));
+					conf.setString("oldTable", ((table.equalsIgnoreCase("netstats")) ? "" : table));
 					conf.setString("newTable", "");
 					conf.save();
 				} else {
-					config.put("oldTable", "netstats");
+					oldTable = (conf.isEmpty("oldTable")) ? "netstats" : conf.getString("oldTable");
+					table = oldTable;
+					db = new Database(conf.getString("host"), conf.getString("database"), conf.getString("username"), conf.getString("password"), this);
+					config.put("oldTable", table);
 				}
-				db = new Database((String)config.get("host"), (String)config.get("database"), (String)config.get("username"), (String)config.get("password"), (String)config.get("oldTable"), this);
+				// Do a one time revision if null or false
+				if ((config.get("revised") == null) || !(new Boolean((Boolean)config.get("revised")))) {
+					db.update("total=total/1000");
+					conf.setBoolean("revised", true);
+					conf.save();
+				}
+				// END REVISION
 				// First, the plugin is either reloading or is starting up, so set all users to being logged off
 				db.update("logged=0");
 				// If the plugin is just reloading, we need to set all online players back to being online
-				for (Player p : getServer().getOnlinePlayers()) {
-					db.update("logged=1 WHERE player = '"+p.getName()+"';");
-				}
+				for (Player p : getServer().getOnlinePlayers()) db.update("logged=1 WHERE player='"+p.getName()+"';");
 			}
 		}
 		if (!disabled) {
 			runner = new NetRepeater(this);
+			
+			// Create server and start it as daemon to consume minimal resources
+			//new NetServer(this);
+			
 			PluginManager pm = getServer().getPluginManager();
 
 			// Register player events
@@ -243,8 +249,30 @@ public class Netstats extends JavaPlugin {
 						// Only allow the actual use of the commands to the admin defined in the config
 						if (name.equals(config.get("admin").toString().trim())) {
 							switch (args.length) {
+								case 1:
+									if (args[0].equalsIgnoreCase("pass")) player.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
+									return true;
+								case 2:
+									if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
+										// netstats wipe <pass>
+										getServer().savePlayers();
+										for (Player p : getServer().getOnlinePlayers()) {
+											getServer().dispatchCommand(sender, "kick "+p.getName());
+											new File(players+p.getName()+".stats").delete();
+										}
+										db.wipe();
+										log.info('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
+										reload();
+									}
+									return true;
+								default:
+									return false;
+							}
+						}
+					} else if (sender instanceof ConsoleCommandSender) {
+						switch (args.length) {
 							case 1:
-								if (args[0].equalsIgnoreCase("pass")) player.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
+								if (args[0].equalsIgnoreCase("pass")) sender.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
 								return true;
 							case 2:
 								if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
@@ -254,35 +282,13 @@ public class Netstats extends JavaPlugin {
 										getServer().dispatchCommand(sender, "kick "+p.getName());
 										new File(players+p.getName()+".stats").delete();
 									}
-									db.wipe(config.get("oldTable").toString());
+									db.wipe();
 									log.info('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
-									getServer().reload();
+									reload();
 								}
 								return true;
 							default:
 								return false;
-							}
-						}
-					} else if (sender instanceof ConsoleCommandSender) {
-						switch (args.length) {
-						case 1:
-							if (args[0].equalsIgnoreCase("pass")) sender.sendMessage(ChatColor.DARK_PURPLE+"Netstats data wipe password: "+ChatColor.DARK_RED+config.get("wipePass"));
-							return true;
-						case 2:
-							if (args[0].equalsIgnoreCase("wipe") && args[1].equals(config.get("wipePass"))) {
-								// netstats wipe <pass>
-								getServer().savePlayers();
-								for (Player p : getServer().getOnlinePlayers()) {
-									getServer().dispatchCommand(sender, "kick "+p.getName());
-									new File(players+p.getName()+".stats").delete();
-								}
-								db.wipe(config.get("oldTable").toString());
-								log.info('['+pName+"]: "+ChatColor.DARK_PURPLE+"All Netstats data has been reset. Reloading the server.");
-								getServer().reload();
-							}
-							return true;
-						default:
-							return false;
 						}
 					}
 					return false;

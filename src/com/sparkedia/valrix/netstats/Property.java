@@ -170,6 +170,11 @@ public final class Property {
 		return false;
 	}
 	
+	// Return all the keys that exist
+	public Set<?> getKeys() {
+		return properties.keySet();
+	}
+	
 	// Check if the key no value
 	public boolean isEmpty(String key) {
 		if (properties.get(key).toString().length() == 0) {

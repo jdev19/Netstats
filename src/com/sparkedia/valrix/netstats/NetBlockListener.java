@@ -37,7 +37,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// They reloaded the plugins, time to re-set the player property files
-				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+				users.put(name, new Property(players+'/'+name+".stats", plugin));
 				actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
@@ -53,7 +53,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+now+", ";
-				sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				sql += "total=total+"+((prop.getLong("total")+(now-prop.getLong("seen")))/1000)+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total
 				prop.setInt("broken", 0);
@@ -85,7 +85,7 @@ public class NetBlockListener extends BlockListener {
 			String name = e.getPlayer().getName();
 			if (!users.containsKey(name)) {
 				// Plugin is reset, make sure to re-set the property files
-				users.put(name, new Property(plugin.getCanonFile(players+'/'+name+".stats"), plugin));
+				users.put(name, new Property(players+'/'+name+".stats", plugin));
 				actions.put(name, (action/2));
 			}
 			Property prop = users.get(name);
@@ -101,7 +101,7 @@ public class NetBlockListener extends BlockListener {
 				sql += (prop.getInt("playersKilled") > 0) ? "playerskilled=playerskilled+"+prop.getInt("playersKilled")+", " : "";
 				sql += (prop.getDouble("distance") > 0) ? "distance=distance+"+prop.getDouble("distance")+", " : "";
 				sql += "seen="+now+", ";
-				sql += "total=total+"+(prop.getLong("total")+(now-prop.getLong("seen")))+" WHERE player='"+name+"';";
+				sql += "total=total+"+((prop.getLong("total")+(now-prop.getLong("seen")))/1000)+" WHERE player='"+name+"';";
 				db.update(sql);
 				// Reset data data back to nothing except enter and total
 				prop.setInt("broken", 0);
