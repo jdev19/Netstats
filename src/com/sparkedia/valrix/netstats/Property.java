@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,11 +31,7 @@ public final class Property {
 		this.filename = filename;
 		File file = new File(filename);
 
-		if (file.exists()) {
-			load();
-		} else {
-			save();
-		}
+		if (file.exists()) load(); else save();
 	}
 	
 	// Load data from file into ordered HashMap
@@ -45,36 +42,24 @@ public final class Property {
 			String line;
 			int cc = 0; // # of comments
 			int lc = 0; // # of lines
+			int delim;
 			
-			// While there are lines to read
+			// While there are lines to read (auto-breaks)
 			while ((line = br.readLine()) != null) {
-				// Line has content
-				if (line.trim().length() == 0) {
-					continue;
-				}
-				// If not the first line and is a comment, store it for later
-				if (line.charAt(0) == '#' && lc > 0) {
-					int delim = line.indexOf(' ');
-					String key = "#"+cc;
-					String val = line.substring(delim+1).trim();
-					properties.put(key, val);
+				lc++;
+				// Is a comment, store it
+				if (line.charAt(0) == '#') {
+					properties.put("#"+cc, line.substring(line.indexOf(' ')+1).trim());
 					cc++;
 					continue;
 				}
-				// and isn't the first line of the file
-				if (lc > 0) {
-					int delim = 0;
-					// Not the first line and isn't a comment, store the key and value
-					while ((delim = line.indexOf('=')) != -1) {
-						if (line.charAt(delim-1) != '\\') {
-							String key = line.substring(0, delim).trim();
-							String val = line.substring(delim+1).trim();
-							properties.put(unescape(key), val);
-							break;
-						}
-					}
+				// Isn't a comment, store the key and value
+				while ((delim = line.indexOf('=')) != -1) {
+					String key = line.substring(0, delim).trim();
+					String val = line.substring(delim+1).trim();
+					properties.put(key, val);
+					break;
 				}
-				lc++;
 			}
 		} catch (FileNotFoundException ex) {
 			log.log(Level.SEVERE, '['+pName+"]: Couldn't find file "+filename, ex);
@@ -85,9 +70,7 @@ public final class Property {
 		} finally {
 			// Close the reader
 			try {
-				if (br != null) {
-					br.close();
-				}
+				if (br != null) br.close();
 			} catch (IOException ex) {
 				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			}
@@ -123,7 +106,7 @@ public final class Property {
 						bw.newLine();
 					} else {
 						// Otherwise write the key and value pair as key=value
-						bw.write(escape(key)+'='+val);
+						bw.write(key+'='+val);
 						bw.newLine();
 					}
 				}
@@ -137,10 +120,7 @@ public final class Property {
 		} finally {
 			// Close the BufferedWriter
 			try {
-				if (bw != null) {
-					bw.flush();
-					bw.close();
-				}
+				if (bw != null) bw.close();
 			} catch (IOException ex) {
 				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+filename, ex);
 			}
@@ -156,52 +136,42 @@ public final class Property {
 	
 	// Function to check if current properties file matches a referenced one by validating every key
 	public boolean match(LinkedHashMap<String, Object> prop) {
-		if (properties.keySet().containsAll(prop.keySet())) {
-			return true;
-		}
-		return false;
+		return (properties.keySet().containsAll(prop.keySet())) ? true : false;
 	}
 	
 	// Check if the key exists or not
 	public boolean keyExists(String key) {
-		if(properties.containsKey(key)) {
-			return true;
-		}
-		return false;
+		return (properties.containsKey(key)) ? true : false;
 	}
 	
 	// Return all the keys that exist
-	public Set<?> getKeys() {
+	public Set<String> getKeys() {
 		return properties.keySet();
+	}
+	
+	// Return all the stored values
+	public Collection<Object> getValues() {
+		return properties.values();
 	}
 	
 	// Check if the key no value
 	public boolean isEmpty(String key) {
-		if (properties.get(key).toString().length() == 0) {
-			return true;
-		}
-		return false;
+		return (properties.get(key).toString().length() == 0) ? true : false;
 	}
 	
 	// Increment the key by 1, only for integers
 	public void inc(String key) {
-		properties.put(key, String.valueOf(Integer.parseInt((String)properties.get(key))+1));
+		properties.put(key, String.valueOf(Integer.parseInt(properties.get(key).toString())+1));
 	}
 	
 	// Remove key from map
 	public boolean remove(String key) {
-		if (properties.remove(key) != null) {
-			return true;
-		}
-		return false;
+		return (properties.remove(key) != null) ? true : false;
 	}
 	
 	// get and set property value as a string
 	public String getString(String key) {
-		if (properties.containsKey(key)) {
-			return (String)properties.get(key);
-		}
-		return "";
+		return (properties.containsKey(key)) ? properties.get(key).toString() : "";
 	}
 	public void setString(String key, String value) {
 		properties.put(key, value);
@@ -209,10 +179,7 @@ public final class Property {
 	
 	// get and set property value as an int
 	public int getInt(String key) {
-		if (properties.containsKey(key)) {
-			return Integer.parseInt((String)properties.get(key));
-		}
-		return 0;
+		return (properties.containsKey(key)) ? Integer.parseInt(properties.get(key).toString()) : 0;
 	}
 	public void setInt(String key, int value) {
 		properties.put(key, String.valueOf(value));
@@ -221,10 +188,7 @@ public final class Property {
 	
 	// get and set property value as a double
 	public double getDouble(String key) {
-		if (properties.containsKey(key)) {
-			return Double.parseDouble((String)properties.get(key));
-		}
-		return 0.0D;
+		return (properties.containsKey(key)) ? Double.parseDouble(properties.get(key).toString()) : 0.0D;
 	}
 	public void setDouble(String key, double value) {
 		properties.put(key, String.valueOf(value));
@@ -232,10 +196,7 @@ public final class Property {
 	
 	// get and set property value as a long
 	public long getLong(String key) {
-		if (properties.containsKey(key)) {
-			return Long.parseLong((String)properties.get(key));
-		}
-		return 0L;
+		return (properties.containsKey(key)) ? Long.parseLong(properties.get(key).toString()) : 0L;
 	}
 	public void setLong(String key, long value) {
 		properties.put(key, String.valueOf(value));
@@ -243,10 +204,7 @@ public final class Property {
 	
 	// get and set property value as a float
 	public float getFloat(String key) {
-		if (properties.containsKey(key)) {
-			return Float.parseFloat((String)properties.get(key));
-		}
-		return 0F;
+		return (properties.containsKey(key)) ? Float.parseFloat(properties.get(key).toString()) : 0F;
 	}
 	public void setFloat(String key, float value) {
 		properties.put(key, String.valueOf(value));
@@ -254,26 +212,9 @@ public final class Property {
 	
 	// get and set property value as a boolean
 	public boolean getBoolean(String key) {
-		if (properties.containsKey(key)) {
-			return Boolean.parseBoolean((String)properties.get(key));
-		}
-		return false;
+		return (properties.containsKey(key)) ? Boolean.parseBoolean(properties.get(key).toString()) : false;
 	}
 	public void setBoolean(String key, boolean value) {
 		properties.put(key, String.valueOf(value));
-	}
-	
-	private String escape(String key) {
-		key.replace("=", "\\=");
-		key.replace(":", "\\:");
-		key.replace(" ", "\\ ");
-		return key;
-	}
-	
-	private String unescape(String key) {
-		key.replace("\\=", "=");
-		key.replace("\\:", ":");
-		key.replace("\\ ", " ");
-		return key;
 	}
 }

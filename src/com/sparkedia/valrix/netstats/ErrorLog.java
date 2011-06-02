@@ -2,9 +2,10 @@ package com.sparkedia.valrix.netstats;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ public final class ErrorLog {
 		BufferedWriter bw = null;
 		try {
 			// Construct the BufferedWriter object
-			bw = new BufferedWriter(new FileWriter(file));
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));
 			bw.write("# "+pName+" Error Log");
 			bw.newLine();
 			
@@ -47,11 +48,9 @@ public final class ErrorLog {
 				while (i.hasNext()) {
 					// Map the entry and save the key and value as variables
 					Map.Entry<?, ?> me = (Map.Entry<?, ?>)i.next();
-					String key = (String)me.getKey();
-					String val = me.getValue().toString();
 					
-					// Otherwise write the key and value pair as key=value
-					bw.write(key+": "+val);
+					// Write the key and value pair as key=value
+					bw.write(me.getKey().toString()+": "+me.getValue().toString());
 					bw.newLine();
 				}
 			}
@@ -64,10 +63,7 @@ public final class ErrorLog {
 		} finally {
 			// Close the BufferedWriter
 			try {
-				if (bw != null) {
-					bw.flush();
-					bw.close();
-				}
+				if (bw != null) bw.close();
 			} catch (IOException ex) {
 				log.log(Level.SEVERE, '['+pName+"]: Unable to save "+file, ex);
 			}
