@@ -1,12 +1,1 @@
-Joint project of Josh Devecka (amd3th/jdev19) and John-Michael Glenn (Valrix).
-
-This is a very simple Bukkit plugin to send user and time data to a database
-for storage until the data is later pulled to be displayed however you desire.
-Our method is to send the data when the user joins and create a small data file
-so when they do something it updates the file until they hit a set number of
-actions or the timed update event fires which updates everyone's data and
-stores it to the database.
-
-Feel free to use the code however you'd like and compile the plugin yourself
-if you want. Just please leave us some credit if you continue to build upon
-the plugin. It did take a while and was our first time learning Java. Thanks.
+The repo has been moved to https://github.com/phyreman/Netstats to better reflect who is working on it as well as a few other reasons (nothing bad). If you want to keep track of it, then please go watch that repo instead since this will (probably) no longer be updated. Thanks for your understanding.
