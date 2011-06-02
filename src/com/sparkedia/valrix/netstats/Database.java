@@ -43,7 +43,6 @@ public final class Database {
 	}
 
 	private Connection connection() throws ClassNotFoundException, SQLException {
-		// Class.forName("com.mysql.jdbc.Driver");
 		Class.forName("java.sql.Driver");
 		return DriverManager.getConnection("jdbc:mysql://"+host+'/'+db, username, password);
 	}
@@ -305,7 +304,7 @@ public final class Database {
 				}
 				it++;
 			}
-			if (!cs.equalsIgnoreCase("utf8")|| !co.equalsIgnoreCase("utf8_general_ci")) {
+			if (!cs.equalsIgnoreCase("utf8") || !co.equalsIgnoreCase("utf8_general_ci")) {
 				st.execute("ALTER DATABASE `"+db+"` DEFAULT CHARSET 'utf8' COLLATE 'utf8_general_ci';");
 				st.execute("ALTER TABLE `"+plugin.table+"` DEFAULT CHARSET 'utf8' COLLATE 'utf8_general_ci';");
 			}

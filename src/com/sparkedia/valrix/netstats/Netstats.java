@@ -13,7 +13,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
+import org.bukkit.event.Event.Priority;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
@@ -28,6 +29,7 @@ public class Netstats extends JavaPlugin {
 	public HashMap<String, Integer> actions = new HashMap<String, Integer>();
 	public String pName;
 	public String df; // Data Folder
+	public String uf; // Plugin update folder
 	public String players;
 	public String logs;
 	public Database db;
@@ -53,12 +55,16 @@ public class Netstats extends JavaPlugin {
 		getPluginLoader().enablePlugin(this);
 	}
 	
-	private void mkDirs(String d) {
-		for (String f : d.split(" ")) {
-			if (!new File(f).exists()) {
-				new File(f).mkdir();
-			}
-		}
+	@SuppressWarnings("unused")
+	private void update() {
+		getPluginLoader().disablePlugin(this);
+		//new File(df+"/Netstats.jar").delete();
+		//new File(getServer().getUpdateFolder()+"/Netstats.jar").renameTo(new File(df+"/Netstats.jar"));
+		getPluginLoader().enablePlugin(this);
+	}
+	
+	private void mkDirs(String...d) {
+		for (String f : d) new File(f).mkdir();
 	}
 
 	@Override
@@ -83,14 +89,14 @@ public class Netstats extends JavaPlugin {
 		pName = pdf.getName();
 		
 		df = getDataFolder().toString();
+		uf = getServer().getUpdateFolder();
 		players = df+"/players";
 		logs = df+"/logs";
 		String configFile = df+"/config.txt";
-		mkDirs(df+' '+players+' '+logs);
+		mkDirs(df, uf, players, logs);
 		
-		// Check if MySQL connector exists, if not then download and install it
-		//if (!(new File(lib+"/mysql-connector-java-bin.jar")).exists())
-			//new Downloader("", "", this);
+		// Check for updates
+		//new NetUpdater("", "", this);
 		
 		//Does config exist, if not then make a new one and add defaults
 		if (!(new File(configFile).exists())) {
@@ -204,34 +210,24 @@ public class Netstats extends JavaPlugin {
 
 			// Register player events
 			pl = new NetPlayerListener(this);
-			pm.registerEvent(Event.Type.PLAYER_JOIN, pl, Event.Priority.Lowest, this);
-			pm.registerEvent(Event.Type.PLAYER_QUIT, pl, Event.Priority.Lowest, this);
-			pm.registerEvent(Event.Type.PLAYER_KICK, pl, Event.Priority.Lowest, this);
+			pm.registerEvent(Type.PLAYER_JOIN, pl, Priority.Lowest, this);
+			pm.registerEvent(Type.PLAYER_QUIT, pl, Priority.Lowest, this);
+			pm.registerEvent(Type.PLAYER_KICK, pl, Priority.Lowest, this);
 			
-			if ((Boolean)config.get("trackDistanceWalked")) {
-				pm.registerEvent(Event.Type.PLAYER_MOVE, pl, Event.Priority.Monitor, this);
-			}
+			if ((Boolean)config.get("trackDistanceWalked")) pm.registerEvent(Type.PLAYER_MOVE, pl, Priority.Monitor, this);
 
 			// Register block events
 			if ((Boolean)config.get("trackBroken") || (Boolean)config.get("trackPlaced")) {
 				bl = new NetBlockListener(this);
-				if ((Boolean)config.get("trackBroken")) {
-					pm.registerEvent(Event.Type.BLOCK_BREAK, bl, Event.Priority.Monitor, this);
-				}
-				if ((Boolean)config.get("trackPlaced")) {
-					pm.registerEvent(Event.Type.BLOCK_PLACE, bl, Event.Priority.Monitor, this);
-				}
+				if ((Boolean)config.get("trackBroken")) pm.registerEvent(Type.BLOCK_BREAK, bl, Priority.Monitor, this);
+				if ((Boolean)config.get("trackPlaced")) pm.registerEvent(Type.BLOCK_PLACE, bl, Priority.Monitor, this);
 			}
 
 			// Register entity events
 			if ((Boolean)config.get("trackDeaths") || (Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
 				el = new NetEntityListener(this);
-				if ((Boolean)config.get("trackDeaths")) {
-					pm.registerEvent(Event.Type.ENTITY_DEATH, el, Event.Priority.Monitor, this);
-				}
-				if ((Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) {
-					pm.registerEvent(Event.Type.ENTITY_DAMAGE, el, Event.Priority.Monitor, this);
-				}
+				if ((Boolean)config.get("trackDeaths")) pm.registerEvent(Type.ENTITY_DEATH, el, Priority.Monitor, this);
+				if ((Boolean)config.get("trackMonsterKills") || (Boolean)config.get("trackPlayerKills")) pm.registerEvent(Type.ENTITY_DAMAGE, el, Priority.Monitor, this);
 			}
 
 			if ((Integer)config.get("updateRate") > 0) {
@@ -257,7 +253,7 @@ public class Netstats extends JavaPlugin {
 										// netstats wipe <pass>
 										getServer().savePlayers();
 										for (Player p : getServer().getOnlinePlayers()) {
-											getServer().dispatchCommand(sender, "kick "+p.getName());
+											p.kickPlayer("Admin is rebooting server, return in about 10 seconds.");
 											new File(players+p.getName()+".stats").delete();
 										}
 										db.wipe();
@@ -265,8 +261,7 @@ public class Netstats extends JavaPlugin {
 										reload();
 									}
 									return true;
-								default:
-									return false;
+								default: return false;
 							}
 						}
 					} else if (sender instanceof ConsoleCommandSender) {
@@ -279,7 +274,7 @@ public class Netstats extends JavaPlugin {
 									// netstats wipe <pass>
 									getServer().savePlayers();
 									for (Player p : getServer().getOnlinePlayers()) {
-										getServer().dispatchCommand(sender, "kick "+p.getName());
+										p.kickPlayer("Admin is rebooting server, return in about 10 seconds.");
 										new File(players+p.getName()+".stats").delete();
 									}
 									db.wipe();
